@@ -1,10 +1,10 @@
 # riemann-scala-client
 
-Scala client for sending events to Riemann.
+Scala client for sending events to [Riemann](http://aphyr.github.com/riemann/).
 
 ## Usage
 
-### Fire-and-forget mode
+### Fire-and-forget mode (over UDP)
 ```scala
 import RiemannClient._
 val metricsDestination = riemannConnectAs[Unreliable] to new
@@ -13,7 +13,16 @@ val metricsDestination = riemannConnectAs[Unreliable] to new
 state("warning") | metric(0.5) |>> metricsDestination
 ```
 
-### Sending and waiting for a Future
+### Fire-and-forget mode (over TCP)
+```scala
+import RiemannClient._
+val metricsDestination = riemannConnectAs[Reliable] to new
+  InetSocketAddress("localhost", 5555) withValues(host("myhost") | service("myservice response time"))
+
+state("warning") | metric(0.5) |>> metricsDestination
+```
+
+### Sending and waiting for a Future (over TCP)
 ```scala
 import RiemannClient._
 val metricsDestination = riemannConnectAs[Reliable] to new
@@ -25,7 +34,7 @@ state("warning") | metric(0.5) |>< metricsDestination onComplete {
 }
 ```
 
-### Sending a text query
+### Sending a text query (over TCP)
 ```scala
 import RiemannClient._
 val metricsDestination = riemannConnectAs[Reliable] to new
@@ -37,7 +46,12 @@ Query("true") |>< metricsDestination onComplete {
 }
 ```
 
-Please note that operations returning a Future won't compile if the you create the connection with an `Unrealiable` type parameter, this is intentional. (Well, it will compile if you have an implicit in scope implementing `SendAndExpectFeedback[Unreliable]`).
+Please note that operations returning a Future won't compile if the you create the connection with an `Unreliable` type parameter, this is intentional. (Well, it will compile if you have an implicit in scope implementing `SendAndExpectFeedback[Unreliable]`).
+
+## Dependencies
+
+- Akka 2.0.4
+- [riemann-java-client](https://github.com/aphyr/riemann-java-client) for the Protocol Buffers implementation only
 
 ## Status
 
@@ -59,5 +73,4 @@ Remaining items include :
 - (c) 2012 Rached Ben Mustapha <rached@benmur.net>
 - licensed under the MIT license, please see the LICENSE file for details.
 - thanks to Kyle Kingsbury for Riemann and riemann-java-client
-
 
