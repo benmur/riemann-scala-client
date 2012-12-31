@@ -1,0 +1,2 @@
+riemann-scala-client
+====================
