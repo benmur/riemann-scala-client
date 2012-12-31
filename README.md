@@ -58,15 +58,16 @@ Please note that operations returning a Future won't compile if the you create t
 This version is intended to work with Scala 2.9 and Akka 2.0. Support will be added for Scala 2.10 and Akka 2.1 when Scala 2.10 final is released.
 
 Care has been taken to be as reliable as possible, because sending metrics should not impact your application’s stability. In particular:
-- Unit test coverage is fairly good. No metrics are available yet, but the only code not tested is the actual socket code, for which the different conditions are mocked.
--	All API-visible data structures are immutable and concurrency-friendly
+- Unit test coverage is fairly good. No metrics are available yet, but the only code not tested is the actual socket code (which amounts to a total of 5 lines), for which the different conditions are mocked.
+- All API-visible data structures are immutable and concurrency-friendly
 - Network writes are serialized through Akka actors
--	Exceptions are ignored silently (only logged to the akka event bus)
+- Exceptions are ignored silently (only logged to the akka event bus)
 
 Remaining items include :
 - Add explicit unit tests for TCP reconnections (which already work thanks to Akka automatically respawning failed actors).
--	Hybrid tcp/udp connection mode
-- Retrying failed Writes after reconnecting (with a counter).
+- Hybrid tcp/udp connection mode
+- Retrying failed Writes after reconnecting (with a counter)
+- Shutdown/closing
 
 ## Authors/Licensing
 
