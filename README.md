@@ -1,6 +1,6 @@
 # riemann-scala-client
 
-Scala client for sending events to [Riemann](http://aphyr.github.com/riemann/).
+Scala client for sending events to [Riemann](http://aphyr.github.com/riemann/). ![Travis build status](https://api.travis-ci.org/benmur/riemann-scala-client.png)
 
 ## Usage
 
