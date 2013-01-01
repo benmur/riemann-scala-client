@@ -1,5 +1,7 @@
 name := "riemann-scala-client"
 
+organization := "net.benmur"
+
 version := "0.1"
 
 scalaVersion := "2.9.2"
@@ -16,6 +18,6 @@ libraryDependencies += "com.typesafe.akka" % "akka-actor" % "2.0.4"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "1.8" % "test"
 
-libraryDependencies += "org.scalamock" %% "scalamock-scalatest-support" % "latest.integration"
+libraryDependencies += "org.scalamock" %% "scalamock-scalatest-support" % "latest.integration" % "test"
 
 libraryDependencies += "com.typesafe.akka" % "akka-testkit" % "2.0.4" % "test"
