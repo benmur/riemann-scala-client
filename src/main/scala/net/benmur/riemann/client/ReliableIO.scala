@@ -36,11 +36,11 @@ trait ReliableIO {
     }
   }
 
-  implicit object ReliableEventPartSendAndExpectFeedback extends SendAndExpectFeedback[EventPart, Boolean, Reliable] {
+  implicit object ReliableEventPartSendAndExpectFeedback extends SendAndExpectFeedback[EventPart, Boolean, Reliable] with Serializers {
     def send(connection: Connection[Reliable], command: Write[EventPart])(implicit system: ActorSystem, timeout: Timeout): Future[Boolean] =
       connection match {
         case rc: ReliableConnection =>
-          val data = Serializers.serializeEventPartToProtoMsg(command.m).toByteArray
+          val data = serializeEventPartToProtoMsg(command.m).toByteArray
           (rc.ioActor ask WriteBinary(data)).mapTo[Proto.Msg] map (_.getOk)
 
         case c =>
@@ -48,22 +48,22 @@ trait ReliableIO {
       }
   }
 
-  implicit object ReliableQuerySendAndExpectFeedback extends SendAndExpectFeedback[Query, Iterable[EventPart], Reliable] {
+  implicit object ReliableQuerySendAndExpectFeedback extends SendAndExpectFeedback[Query, Iterable[EventPart], Reliable] with Serializers {
     def send(connection: Connection[Reliable], command: Write[Query])(implicit system: ActorSystem, timeout: Timeout): Future[Iterable[EventPart]] =
       connection match {
         case rc: ReliableConnection =>
-          val data = Serializers.serializeQueryToProtoMsg(command.m).toByteArray
-          (rc.ioActor ask WriteBinary(data)).mapTo[Proto.Msg] map (Serializers.unserializeProtoMsg(_))
+          val data = serializeQueryToProtoMsg(command.m).toByteArray
+          (rc.ioActor ask WriteBinary(data)).mapTo[Proto.Msg] map (unserializeProtoMsg(_))
 
         case c =>
           Promise.failed(RemoteError("don't know how to send data to " + c.getClass.getName))
       }
   }
 
-  implicit object ReliableSendOff extends SendOff[EventPart, Reliable] {
+  implicit object ReliableSendOff extends SendOff[EventPart, Reliable] with Serializers {
     def sendOff(connection: Connection[Reliable], command: Write[EventPart]): Unit = connection match {
       case rc: ReliableConnection =>
-        rc.ioActor tell WriteBinary(Serializers.serializeEventPartToProtoMsg(command.m).toByteArray)
+        rc.ioActor tell WriteBinary(serializeEventPartToProtoMsg(command.m).toByteArray)
       case c =>
         System.err.println(
           "don't know how to send data to " + c.getClass.getName)

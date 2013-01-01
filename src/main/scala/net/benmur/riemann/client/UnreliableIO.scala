@@ -20,10 +20,10 @@ trait UnreliableIO {
     val ioActor = system.actorOf(props, "riemann-udp-client-" + nClients.incrementAndGet)
   }
 
-  implicit object UnreliableSendOff extends SendOff[EventPart, Unreliable] {
+  implicit object UnreliableSendOff extends SendOff[EventPart, Unreliable] with Serializers {
     def sendOff(connection: Connection[Unreliable], command: Write[EventPart]): Unit = connection match {
       case uc: UnreliableConnection =>
-        val data = Serializers.serializeEventPartToProtoMsg(command.m).toByteArray
+        val data = serializeEventPartToProtoMsg(command.m).toByteArray
         uc.ioActor tell WriteBinary(data)
       case c => System.err.println("don't know how to send data to " + c.getClass.getName)
     }

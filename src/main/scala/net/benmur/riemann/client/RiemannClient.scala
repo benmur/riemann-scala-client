@@ -6,7 +6,6 @@ import akka.util.Timeout
 object RiemannClient
     extends EventDSL
     with EventSenderDSL
-    with Serializers
     with ReliableIO
     with UnreliableIO
     with DestinationOps {

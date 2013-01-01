@@ -6,6 +6,7 @@ import com.aphyr.riemann.Proto
 import org.scalatest.matchers.ShouldMatchers
 
 class SerializersTest extends FunSuite with ShouldMatchers {
+  object Serializers extends Serializers
   import Serializers._
   import testingsupport.SerializersFixture._
 

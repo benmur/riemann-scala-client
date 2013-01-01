@@ -58,5 +58,3 @@ trait Serializers {
       Some(e.getMetricSint64)
     else None
 }
-
-object Serializers extends Serializers
