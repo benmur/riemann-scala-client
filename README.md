@@ -1,34 +1,88 @@
 # riemann-scala-client
 
-Scala client for sending events to [Riemann](http://aphyr.github.com/riemann/). 
+Scala client for sending events to [Riemann](http://riemann.io/), featuring strong typing, asynchronous API (using [Akka](http://akka.io/) under the hood) and a DSL to avoid cluttering the application codebase with metrics-related code.
+
 [![Build Status](https://api.travis-ci.org/benmur/riemann-scala-client.png)](https://travis-ci.org/benmur/riemann-scala-client/)
+
 ## Usage
 
-### Fire-and-forget mode (over UDP)
+### Minimum viable use case
 ```scala
+import net.benmur.riemann.client._
 import RiemannClient._
+
+val metrics = riemannConnectAs[Unreliable] to new InetSocketAddress("localhost", 5555)
+service("service name") | state("warning") |>> metrics
+```
+
+### Imports
+
+The client relies heavily on implicits, here are the needed ones in scope:
+```scala
+import net.benmur.riemann.client._
+import RiemannClient._
+
+implicit val system = ActorSystem()
+implicit val timeout = Timeout(5 seconds)
+```
+
+### Connecting
+
+```scala
+val tcpDestination = riemannConnectAs[Reliable] to new InetSocketAddress("localhost", 5555)
+val udpDestination = riemannConnectAs[Unreliable] to new InetSocketAddress("localhost", 5555)
+```
+
+Please note that operations returning a Future won't compile if the connection is created with an `Unreliable` type parameter, this is intentional. (Well, it will compile if you have an implicit in scope implementing `SendAndExpectFeedback[Unreliable]`).
+
+### Building events
+
+Building an event is done by combining event parts. Each part is optional, as per the [Protocol Buffers definition](https://github.com/aphyr/riemann-java-client/blob/master/src/main/proto/riemann/proto.proto). Here is how to build a completely populated event:
+```scala
+val event = host("hostname") | service("service xyz") | state("warning") | time(1234L) | 
+            description("metric is way too high") | tags("performance", "slow", "provider-xyz") | 
+            metric(0.8f) | ttl(120L)
+
+// which is the same as (but with less intermediate objects instanciated):
+val event2 = EventPart(host=Some("hostname"), service=Some("service xyz"), state=Some("warning"),
+             description=Some("metric is way too high"), time=Some(1234L),
+             tags=Seq("performance", "slow", "provider-xyz"), metric=Some(0.8f), ttl=Some(120L))
+```
+
+### Settings default event values
+```scala
+// given these declarations:
+val destination = riemannConnectAs[Reliable] to new InetSocketAddress("localhost", 5555)
+val destinationWithDefaults = destination withValues(host("host") | service("service response time"))
+
+// this:
+state("warning") | metric(0.5) |>> destinationWithDefaults
+// is the same as:
+host("host") | service("service response time") | state("warning") | metric(0.5) |>> destination
+```
+
+### Sending events: fire-and-forget mode (over UDP)
+```scala
 val metricsDestination = riemannConnectAs[Unreliable] to new
-  InetSocketAddress("localhost", 5555) withValues(host("myhost") | service("myservice response time"))
+  InetSocketAddress("localhost", 5555) withValues(host("host") | service("service response time"))
 
 state("warning") | metric(0.5) |>> metricsDestination
 ```
 
-### Fire-and-forget mode (over TCP)
+### Sending events: fire-and-forget mode (over TCP)
 ```scala
-import RiemannClient._
 val metricsDestination = riemannConnectAs[Reliable] to new
-  InetSocketAddress("localhost", 5555) withValues(host("myhost") | service("myservice response time"))
+  InetSocketAddress("localhost", 5555) withValues(host("host") | service("service response time"))
 
 state("warning") | metric(0.5) |>> metricsDestination
 ```
 
-### Sending and waiting for a Future (over TCP)
+### Sending events and waiting for a Future (over TCP)
 ```scala
-import RiemannClient._
 val metricsDestination = riemannConnectAs[Reliable] to new
-  InetSocketAddress("localhost", 5555) withValues(host("myhost") | service("myservice response time"))
+  InetSocketAddress("localhost", 5555) withValues(host("host") | service("service response time"))
 
-state("warning") | metric(0.5) |>< metricsDestination onComplete {
+state("warning") | metric(0.5) |>< metricsDestination onSuccess {
   case Left(RemoteError(message)) => println("error: " + message)
   case Right(_) => println("sent ok")
 }
@@ -36,24 +90,24 @@ state("warning") | metric(0.5) |>< metricsDestination onComplete {
 
 ### Sending a text query (over TCP)
 ```scala
-import RiemannClient._
-val metricsDestination = riemannConnectAs[Reliable] to new
-  InetSocketAddress("localhost", 5555) withValues(host("myhost") | service("myservice response time"))
+val metricsDestination = riemannConnectAs[Reliable] to new InetSocketAddress("localhost", 5555)
 
-Query("true") |>< metricsDestination onComplete {
+Query("tagged \"slow\"") |>< metricsDestination onSuccess {
   case Left(RemoteError(message)) => println("error: " + message)
   case Right(events) => events foreach println
 }
 ```
 
-Please note that operations returning a Future won't compile if the you create the connection with an `Unreliable` type parameter, this is intentional. (Well, it will compile if you have an implicit in scope implementing `SendAndExpectFeedback[Unreliable]`).
+Please note that operations returning a Future won't compile if the connection is created with an `Unreliable` type parameter, this is intentional. (Well, it will compile if you have an implicit in scope implementing `SendAndExpectFeedback[Unreliable]`).
 
 ## Dependencies
 
-- Akka 2.0.4
+- [Akka](http://akka.io/) 2.0.4
 - [riemann-java-client](https://github.com/aphyr/riemann-java-client) for the Protocol Buffers implementation only
 
 ## Status
+
+Pull requests are very welcome.
 
 This version is intended to work with Scala 2.9 and Akka 2.0. Support will be added for Scala 2.10 and Akka 2.1 when Scala 2.10 final is released.
 
