@@ -2,7 +2,7 @@ name := "riemann-scala-client"
 
 organization := "net.benmur"
 
-version := "0.1"
+version := "0.2-SNAPSHOT"
 
 scalaVersion := "2.9.2"
 
