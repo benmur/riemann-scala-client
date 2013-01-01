@@ -31,7 +31,7 @@ class ReliableIOTest extends FunSuite
     system.shutdown
   }
 
-  test("sending a protobuf Msg") {
+  test("sending a protobuf Msg with Event") {
     val in = Array.ofDim[Byte](256)
     val ios = new ByteArrayInputStream(in)
     val oos = new ByteArrayOutputStream()
@@ -52,7 +52,7 @@ class ReliableIOTest extends FunSuite
     out.slice(4, out.length) should be === outRef
   }
 
-  test("sending a protobuf Msg, with feedback") {
+  test("sending a protobuf Msg with Event, with feedback") {
     val response = Proto.Msg.newBuilder.setOk(true).build
     val responseBytes = response.toByteArray
 
@@ -71,7 +71,7 @@ class ReliableIOTest extends FunSuite
     socketFactory expects address returning wrapper once
 
     val conn = implicitly[ConnectionBuilder[Reliable]].buildConnection(address, Some(socketFactory), Some(CallingThreadDispatcher.Id))
-    val respFuture = implicitly[SendAndExpectFeedback[EventPart, Reliable]].send(conn, Write(event))
+    val respFuture = implicitly[SendAndExpectFeedback[EventPart, Boolean, Reliable]].send(conn, Write(event))
 
     val out = oos.toByteArray
     val outRef = protoMsgEvent.toByteArray
@@ -79,6 +79,36 @@ class ReliableIOTest extends FunSuite
     out.slice(4, out.length) should be === outRef
 
     val resp = Await.result(respFuture, 1 second)
-    resp should be === Right(Nil)
+    resp should be === true
+  }
+
+  test("sending a protobuf Msg with Query, with feedback") {
+    val response = Proto.Msg.newBuilder.addEvents(protoEvent).addEvents(protoEvent2).setOk(true).build
+    val responseBytes = response.toByteArray
+
+    val responseBuilder = new ByteArrayOutputStream()
+    val responseBuilderData = new DataOutputStream(responseBuilder)
+    responseBuilderData.writeInt(responseBytes.length)
+    responseBuilderData.write(responseBytes)
+
+    val oos = new ByteArrayOutputStream()
+
+    val wrapper = mock[ConnectedSocketWrapper]
+    wrapper expects 'outputStream returning oos once;
+    wrapper expects 'inputStream returning new ByteArrayInputStream(responseBuilder.toByteArray) once
+
+    val socketFactory = mockFunction[SocketAddress, ConnectedSocketWrapper]
+    socketFactory expects address returning wrapper once
+
+    val conn = implicitly[ConnectionBuilder[Reliable]].buildConnection(address, Some(socketFactory), Some(CallingThreadDispatcher.Id))
+    val respFuture = implicitly[SendAndExpectFeedback[Query, Iterable[EventPart], Reliable]].send(conn, Write(Query("true")))
+
+    val out = oos.toByteArray
+    val queryData = protoMsgQuery.toByteArray
+    new DataInputStream(new ByteArrayInputStream(out)).readInt should be === queryData.length
+    out.slice(4, out.length) should be === queryData
+
+    val resp = Await.result(respFuture, 1 second)
+    resp should be === Seq(event, event2)
   }
 }

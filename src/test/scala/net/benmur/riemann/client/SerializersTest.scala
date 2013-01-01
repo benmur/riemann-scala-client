@@ -1,12 +1,11 @@
 package net.benmur.riemann.client
 
 import scala.collection.JavaConversions.asJavaIterable
-
 import org.scalatest.FunSuite
-
 import com.aphyr.riemann.Proto
+import org.scalatest.matchers.ShouldMatchers
 
-class SerializersTest extends FunSuite {
+class SerializersTest extends FunSuite with ShouldMatchers {
   import Serializers._
   import testingsupport.SerializersFixture._
 
@@ -132,107 +131,110 @@ class SerializersTest extends FunSuite {
   }
 
   test("in: convert a protobuf Msg response with an ok status") {
-    expect(Right(Nil)) {
+    expect(Nil) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).build)
     }
   }
 
   test("in: convert a protobuf Msg response with a non-ok status and an error message") {
-    expect(Left(RemoteError("meh"))) {
+    val ex = intercept[RemoteError] {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(false).setError("meh").build)
     }
+    ex.message should be === "meh"
   }
 
   test("in: convert a failed Query result from a protobuf Msg with events") {
-    expect(Left(RemoteError("meh"))) {
+    val ex = intercept[RemoteError] {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(false).setError("meh").addEvents(protobufEvent1).build)
     }
+    ex.message should be === "meh"
   }
 
   test("in: convert a successful Query result from a protobuf Msg to multiple EventParts") {
-    expect(Right(List(event1))) {
+    expect(List(event1)) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(protobufEvent1).build)
     }
   }
 
-  test("in: convert Query result with missing ok from a protobuf Msg to RemoteError") {
-    expect(Left(RemoteError("Response has no status"))) {
+  test("in: convert a Query result with missing ok from a protobuf Msg to RemoteError") {
+    val ex = intercept[RemoteError] {
       unserializeProtoMsg(Proto.Msg.newBuilder.addEvents(protobufEvent1).build)
     }
+    ex.message should be === "Response has no status"
   }
 
-  test("in: convert a protobuf Msg with empty Event to a Right(List(EventPart))") {
-    expect(Right(List(EventPart()))) {
+  test("in: convert a protobuf Msg with empty Event to a List(EventPart)") {
+    expect(List(EventPart())) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
         Proto.Event.newBuilder).build)
     }
   }
 
-  test("in: convert a protobuf Msg with Event with only host to a Right(List(EventPart))") {
-    expect(Right(List(EventPart(host = Some("host"))))) {
+  test("in: convert a protobuf Msg with Event with only host to a List(EventPart)") {
+    expect(List(EventPart(host = Some("host")))) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
         Proto.Event.newBuilder.setHost("host")).build)
     }
   }
 
-  test("in: convert a protobuf Msg with Event with only service to a Right(List(EventPart))") {
-    expect(Right(List(EventPart(service = Some("service"))))) {
+  test("in: convert a protobuf Msg with Event with only service to a List(EventPart)") {
+    expect(List(EventPart(service = Some("service")))) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
         Proto.Event.newBuilder.setService("service")).build)
     }
   }
 
-  test("in: convert a protobuf Msg with Event with only state to a Right(List(EventPart))") {
-    expect(Right(List(EventPart(state = Some("state"))))) {
+  test("in: convert a protobuf Msg with Event with only state to a List(EventPart)") {
+    expect(List(EventPart(state = Some("state")))) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
         Proto.Event.newBuilder.setState("state")).build)
     }
   }
 
-  test("in: convert a protobuf Msg with Event with only time to a Right(List(EventPart))") {
-    expect(Right(List(EventPart(time = Some(1234L))))) {
+  test("in: convert a protobuf Msg with Event with only time to a List(EventPart)") {
+    expect(List(EventPart(time = Some(1234L)))) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
         Proto.Event.newBuilder.setTime(1234L)).build)
     }
   }
 
-  test("in: convert a protobuf Msg with Event with only description to a Right(List(EventPart))") {
-    expect(Right(List(EventPart(description = Some("description"))))) {
+  test("in: convert a protobuf Msg with Event with only description to a List(EventPart)") {
+    expect(List(EventPart(description = Some("description")))) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
         Proto.Event.newBuilder.setDescription("description")).build)
     }
   }
 
-  test("in: convert a protobuf Msg with Event with only tags to a Right(List(EventPart))") {
-    expect(Right(List(EventPart(tags = List("tag1", "tag2"))))) {
+  test("in: convert a protobuf Msg with Event with only tags to a List(EventPart)") {
+    expect(List(EventPart(tags = List("tag1", "tag2")))) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
         Proto.Event.newBuilder.addAllTags(List("tag1", "tag2"))).build)
     }
   }
 
-  test("in: convert a protobuf Msg with Event with only metric (long) to a Right(List(EventPart))") {
-    expect(Right(List(EventPart(metric = Some(1234L))))) {
+  test("in: convert a protobuf Msg with Event with only metric (long) to a List(EventPart)") {
+    expect(List(EventPart(metric = Some(1234L)))) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
         Proto.Event.newBuilder.setMetricSint64(1234L)).build)
     }
   }
 
-  test("in: convert a protobuf Msg with Event with only metric (float) to a Right(List(EventPart))") {
-    expect(Right(List(EventPart(metric = Some(1234.0f))))) {
+  test("in: convert a protobuf Msg with Event with only metric (float) to a List(EventPart)") {
+    expect(List(EventPart(metric = Some(1234.0f)))) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
         Proto.Event.newBuilder.setMetricF(1234.0f)).build)
     }
   }
 
-  test("in: convert a protobuf Msg with Event with only metric (double) to a Right(List(EventPart))") {
-    expect(Right(List(EventPart(metric = Some(1234.1: Double))))) {
+  test("in: convert a protobuf Msg with Event with only metric (double) to a List(EventPart)") {
+    expect(List(EventPart(metric = Some(1234.1: Double)))) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
         Proto.Event.newBuilder.setMetricD(1234.1: Double)).build)
     }
   }
 
-  test("in: convert a protobuf Msg with Event with only ttl to a Right(List(EventPart))") {
-    expect(Right(List(EventPart(ttl = Some(1234L))))) {
+  test("in: convert a protobuf Msg with Event with only ttl to a List(EventPart)") {
+    expect(List(EventPart(ttl = Some(1234L)))) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
         Proto.Event.newBuilder.setTtl(1234L)).build)
     }

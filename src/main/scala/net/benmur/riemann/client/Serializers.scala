@@ -15,10 +15,10 @@ trait Serializers {
     .addAllEvents(ei.events map convertOneEventPart)
     .build
 
-  def unserializeProtoMsg(m: Proto.Msg): Either[RemoteError, List[EventPart]] = m.hasOk match {
-    case true if m.getOk => Right(m.getEventsList map convertProtoEventToEventPart toList)
-    case true            => Left(RemoteError(m.getError))
-    case false           => Left(RemoteError("Response has no status"))
+  def unserializeProtoMsg(m: Proto.Msg): Iterable[EventPart] = m.hasOk match {
+    case true if m.getOk => m.getEventsList map convertProtoEventToEventPart toList
+    case true            => throw RemoteError(m.getError)
+    case false           => throw RemoteError("Response has no status")
   }
 
   private def convertOneEventPart(e: EventPart) = {

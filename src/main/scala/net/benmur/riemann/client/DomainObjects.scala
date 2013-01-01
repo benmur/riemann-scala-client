@@ -1,6 +1,6 @@
 package net.benmur.riemann.client
 
-import java.io.{InputStream, OutputStream}
+import java.io.{ InputStream, OutputStream }
 import java.net.SocketAddress
 
 import scala.annotation.implicitNotFound
@@ -55,10 +55,10 @@ trait UnconnectedSocketWrapper {
 
 trait Destination[T <: TransportType] {
   def send(event: EventPart)(implicit messenger: SendOff[EventPart, T]): Unit
-  def ask(event: EventPart)(implicit messenger: SendAndExpectFeedback[EventPart, T]): Future[Either[RemoteError, List[EventPart]]]
+  def ask(event: EventPart)(implicit messenger: SendAndExpectFeedback[EventPart, Boolean, T]): Future[Boolean]
   def send(events: EventSeq)(implicit messenger: SendOff[EventSeq, T]): Unit
-  def ask(events: EventSeq)(implicit messenger: SendAndExpectFeedback[EventSeq, T]): Future[Either[RemoteError, List[EventPart]]]
-  def ask(query: Query)(implicit messenger: SendAndExpectFeedback[Query, T]): Future[Either[RemoteError, List[EventPart]]]
+  def ask(events: EventSeq)(implicit messenger: SendAndExpectFeedback[EventSeq, Boolean, T]): Future[Boolean]
+  def ask(query: Query)(implicit messenger: SendAndExpectFeedback[Query, Iterable[EventPart], T]): Future[Iterable[EventPart]]
   def withValues(event: EventPart): Destination[T]
 }
 
@@ -73,6 +73,6 @@ trait SendOff[S <: RiemannSendable, T <: TransportType] {
 }
 
 @implicitNotFound(msg = "Connection type ${T} does not allow getting feedback from Riemann after sending ${S} because there is no implicit in scope returning a implementation of SendAndExpectFeedback[${S}, ${T}].")
-trait SendAndExpectFeedback[S <: RiemannSendable, T <: TransportType] {
-  def send(connection: Connection[T], command: Write[S])(implicit system: ActorSystem, timeout: Timeout): Future[Either[RemoteError, List[EventPart]]]
+trait SendAndExpectFeedback[S <: RiemannSendable, R, T <: TransportType] {
+  def send(connection: Connection[T], command: Write[S])(implicit system: ActorSystem, timeout: Timeout): Future[R]
 }

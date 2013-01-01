@@ -36,27 +36,27 @@ trait ReliableIO {
     }
   }
 
-  implicit object ReliableEventPartSendAndExpectFeedback extends SendAndExpectFeedback[EventPart, Reliable] {
-    def send(connection: Connection[Reliable], command: Write[EventPart])(implicit system: ActorSystem, timeout: Timeout): Future[Either[RemoteError, List[EventPart]]] =
+  implicit object ReliableEventPartSendAndExpectFeedback extends SendAndExpectFeedback[EventPart, Boolean, Reliable] {
+    def send(connection: Connection[Reliable], command: Write[EventPart])(implicit system: ActorSystem, timeout: Timeout): Future[Boolean] =
       connection match {
         case rc: ReliableConnection =>
           val data = Serializers.serializeEventPartToProtoMsg(command.m).toByteArray
-          (rc.ioActor ask WriteBinary(data)).mapTo[Either[RemoteError, List[EventPart]]]
+          (rc.ioActor ask WriteBinary(data)).mapTo[Proto.Msg] map (_.getOk)
+
         case c =>
-          Promise.successful(Left(RemoteError(
-            "don't know how to send data to " + c.getClass.getName)))
+          Promise.failed(RemoteError("don't know how to send data to " + c.getClass.getName))
       }
   }
 
-  implicit object ReliableQuerySendAndExpectFeedback extends SendAndExpectFeedback[Query, Reliable] {
-    def send(connection: Connection[Reliable], command: Write[Query])(implicit system: ActorSystem, timeout: Timeout): Future[Either[RemoteError, List[EventPart]]] =
+  implicit object ReliableQuerySendAndExpectFeedback extends SendAndExpectFeedback[Query, Iterable[EventPart], Reliable] {
+    def send(connection: Connection[Reliable], command: Write[Query])(implicit system: ActorSystem, timeout: Timeout): Future[Iterable[EventPart]] =
       connection match {
         case rc: ReliableConnection =>
           val data = Serializers.serializeQueryToProtoMsg(command.m).toByteArray
-          (rc.ioActor ask WriteBinary(data)).mapTo[Either[RemoteError, List[EventPart]]]
+          (rc.ioActor ask WriteBinary(data)).mapTo[Proto.Msg] map (Serializers.unserializeProtoMsg(_))
+
         case c =>
-          Promise.successful(Left(RemoteError(
-            "don't know how to send data to " + c.getClass.getName)))
+          Promise.failed(RemoteError("don't know how to send data to " + c.getClass.getName))
       }
   }
 
@@ -83,12 +83,12 @@ trait ReliableIO {
           outputStream.flush
           val buf = Array.ofDim[Byte](inputStream.readInt())
           inputStream.readFully(buf)
-          sender ! Serializers.unserializeProtoMsg(Proto.Msg.parseFrom(buf))
+          sender ! Proto.Msg.parseFrom(buf)
         } catch {
           case e: SocketException => throw e
           case exception =>
             log.error(exception, "could not send or receive data")
-            sender ! Left(RemoteError(exception.getMessage()))
+            sender ! Proto.Msg.newBuilder.setError(exception.getMessage).setOk(false).build
         }
     }
   }

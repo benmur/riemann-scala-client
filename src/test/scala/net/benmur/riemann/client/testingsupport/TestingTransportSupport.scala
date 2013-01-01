@@ -25,33 +25,36 @@ trait TestingTransportSupport {
     }
   }
 
-  implicit object TestingTransportEventPartSendAndExpectFeedback extends SendAndExpectFeedback[EventPart, TestingTransport] {
-    def send(connection: Connection[TestingTransport], command: Write[EventPart])(implicit system: ActorSystem, timeout: Timeout): Future[Either[RemoteError, List[EventPart]]] =
+  implicit object TestingTransportEventPartSendAndExpectFeedback extends SendAndExpectFeedback[EventPart, Boolean, TestingTransport] {
+    def send(connection: Connection[TestingTransport], command: Write[EventPart])(implicit system: ActorSystem, timeout: Timeout): Future[Boolean] =
       connection match {
         case tc: TestingTransportConnection =>
           tc.sentExpect = command
-          Promise.successful(Right(Nil))
-        case c => Promise.successful(Left(RemoteError("bad connection type")))
+          Promise.successful(true)
+        case c =>
+          Promise.failed(RemoteError("bad connection type"))
       }
   }
 
-  implicit object TestingTransportEventSeqSendAndExpectFeedback extends SendAndExpectFeedback[EventSeq, TestingTransport] {
-    def send(connection: Connection[TestingTransport], command: Write[EventSeq])(implicit system: ActorSystem, timeout: Timeout): Future[Either[RemoteError, List[EventPart]]] =
+  implicit object TestingTransportEventSeqSendAndExpectFeedback extends SendAndExpectFeedback[EventSeq, Boolean, TestingTransport] {
+    def send(connection: Connection[TestingTransport], command: Write[EventSeq])(implicit system: ActorSystem, timeout: Timeout): Future[Boolean] =
       connection match {
         case tc: TestingTransportConnection =>
           tc.sentExpect = command
-          Promise.successful(Right(Nil))
-        case c => Promise.successful(Left(RemoteError("bad connection type")))
+          Promise.successful(true)
+        case c =>
+          Promise.failed(RemoteError("bad connection type"))
       }
   }
 
-  implicit object TestingTransportQuerySendAndExpectFeedback extends SendAndExpectFeedback[Query, TestingTransport] {
-    def send(connection: Connection[TestingTransport], command: Write[Query])(implicit system: ActorSystem, timeout: Timeout): Future[Either[RemoteError, List[EventPart]]] =
+  implicit object TestingTransportQuerySendAndExpectFeedback extends SendAndExpectFeedback[Query, Iterable[EventPart], TestingTransport] {
+    def send(connection: Connection[TestingTransport], command: Write[Query])(implicit system: ActorSystem, timeout: Timeout): Future[Iterable[EventPart]] =
       connection match {
         case tc: TestingTransportConnection =>
           tc.sentExpect = command
-          Promise.successful(Right(Nil))
-        case c => Promise.successful(Left(RemoteError("bad connection type")))
+          Promise.successful(Seq(event, event2))
+        case c =>
+          Promise.failed(RemoteError("bad connection type"))
       }
   }
 

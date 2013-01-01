@@ -18,16 +18,16 @@ trait DestinationOps {
     def send(event: EventPart)(implicit messenger: SendOff[EventPart, T]): Unit =
       messenger.sendOff(connection, Write(EventDSL.mergeEvents(baseEvent, event)))
 
-    def ask(event: EventPart)(implicit messenger: SendAndExpectFeedback[EventPart, T]): Future[Either[RemoteError, List[EventPart]]] =
+    def ask(event: EventPart)(implicit messenger: SendAndExpectFeedback[EventPart, Boolean, T]): Future[Boolean] =
       messenger.send(connection, Write(EventDSL.mergeEvents(baseEvent, event)))
 
     def send(events: EventSeq)(implicit messenger: SendOff[EventSeq, T]): Unit =
       messenger.sendOff(connection, Write(EventSeq(events.events map (EventDSL.mergeEvents(baseEvent, _)): _*)))
 
-    def ask(events: EventSeq)(implicit messenger: SendAndExpectFeedback[EventSeq, T]): Future[Either[RemoteError, List[EventPart]]] =
+    def ask(events: EventSeq)(implicit messenger: SendAndExpectFeedback[EventSeq, Boolean, T]): Future[Boolean] =
       messenger.send(connection, Write(EventSeq(events.events map (EventDSL.mergeEvents(baseEvent, _)): _*)))
 
-    def ask(query: Query)(implicit messenger: SendAndExpectFeedback[Query, T]): Future[Either[RemoteError, List[EventPart]]] =
+    def ask(query: Query)(implicit messenger: SendAndExpectFeedback[Query, Iterable[EventPart], T]): Future[Iterable[EventPart]] =
       messenger.send(connection, Write(query))
 
     def withValues(event: EventPart): RiemannDestination[T] =
