@@ -1,33 +1,52 @@
 package net.benmur.riemann.client.testingsupport
 
+import java.net.{ InetSocketAddress, SocketAddress }
+import com.aphyr.riemann.Proto
+import akka.actor.ActorSystem
+import akka.dispatch.{ Future, Promise }
 import akka.util.Timeout
 import akka.util.duration.intToDurationInt
-import net.benmur.riemann.client.{ Connection, EventSenderDSL, SendOff, TransportType, Write }
-import com.aphyr.riemann.Proto
-import net.benmur.riemann.client.DestinationOps
-import net.benmur.riemann.client.EventPart
-import akka.actor.ActorSystem
-import akka.dispatch.Future
-import net.benmur.riemann.client.SendAndExpectFeedback
-import akka.dispatch.Promise
-import net.benmur.riemann.client.RemoteError
-import java.net.SocketAddress
-import net.benmur.riemann.client.ConnectionBuilder
-import java.net.InetSocketAddress
+import net.benmur.riemann.client._
 
 trait TestingTransportSupport {
-  import EventSenderDSL._
+  import RiemannClient._
 
   implicit val timeout = Timeout(1 millisecond)
 
-  implicit object TestingTransportSendOff extends SendOff[TestingTransport] {
-    def sendOff(connection: Connection[TestingTransport], command: Write): Unit = connection match {
+  implicit object TestingTransportEventPartSendOff extends SendOff[EventPart, TestingTransport] {
+    def sendOff(connection: Connection[TestingTransport], command: Write[EventPart]): Unit = connection match {
       case uc: TestingTransportConnection => uc.sentOff = command
     }
   }
 
-  implicit object TestingTransportSendAndExpectFeedback extends SendAndExpectFeedback[TestingTransport] {
-    def send(connection: Connection[TestingTransport], command: Write)(implicit system: ActorSystem, timeout: Timeout): Future[Either[RemoteError, List[EventPart]]] =
+  implicit object TestingTransportEventSeqSendOff extends SendOff[EventSeq, TestingTransport] {
+    def sendOff(connection: Connection[TestingTransport], command: Write[EventSeq]): Unit = connection match {
+      case uc: TestingTransportConnection => uc.sentOff = command
+    }
+  }
+
+  implicit object TestingTransportEventPartSendAndExpectFeedback extends SendAndExpectFeedback[EventPart, TestingTransport] {
+    def send(connection: Connection[TestingTransport], command: Write[EventPart])(implicit system: ActorSystem, timeout: Timeout): Future[Either[RemoteError, List[EventPart]]] =
+      connection match {
+        case tc: TestingTransportConnection =>
+          tc.sentExpect = command
+          Promise.successful(Right(Nil))
+        case c => Promise.successful(Left(RemoteError("bad connection type")))
+      }
+  }
+
+  implicit object TestingTransportEventSeqSendAndExpectFeedback extends SendAndExpectFeedback[EventSeq, TestingTransport] {
+    def send(connection: Connection[TestingTransport], command: Write[EventSeq])(implicit system: ActorSystem, timeout: Timeout): Future[Either[RemoteError, List[EventPart]]] =
+      connection match {
+        case tc: TestingTransportConnection =>
+          tc.sentExpect = command
+          Promise.successful(Right(Nil))
+        case c => Promise.successful(Left(RemoteError("bad connection type")))
+      }
+  }
+
+  implicit object TestingTransportQuerySendAndExpectFeedback extends SendAndExpectFeedback[Query, TestingTransport] {
+    def send(connection: Connection[TestingTransport], command: Write[Query])(implicit system: ActorSystem, timeout: Timeout): Future[Either[RemoteError, List[EventPart]]] =
       connection match {
         case tc: TestingTransportConnection =>
           tc.sentExpect = command
@@ -37,8 +56,8 @@ trait TestingTransportSupport {
   }
 
   class TestingTransportConnection(val where: SocketAddress = new InetSocketAddress(0)) extends Connection[TestingTransport] {
-    var sentOff: Write = _
-    var sentExpect: Write = _
+    var sentOff: Write[_ <: RiemannSendable] = _
+    var sentExpect: Write[_ <: RiemannSendable] = _
   }
 
   implicit object TestingTransportConnectionBuilder extends ConnectionBuilder[TestingTransport] {

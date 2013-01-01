@@ -12,7 +12,6 @@ import org.scalatest.matchers.ShouldMatchers
 
 import akka.actor.ActorSystem
 import akka.testkit.CallingThreadDispatcher
-import net.benmur.riemann.client.testingsupport.TestingTransportSupport
 
 class UnreliableIOTest extends FunSuite
     with BeforeAndAfterAll
@@ -21,7 +20,7 @@ class UnreliableIOTest extends FunSuite
     with ShouldMatchers {
 
   import UnreliableIO._
-  import TestingTransportSupport._
+  import testingsupport.TestingTransportSupport._
 
   implicit val system = ActorSystem()
   val address = new InetSocketAddress(0)
@@ -38,6 +37,6 @@ class UnreliableIOTest extends FunSuite
     socketFactory expects address returning socket once
 
     val conn = implicitly[ConnectionBuilder[Unreliable]].buildConnection(address, Some(socketFactory), Some(CallingThreadDispatcher.Id))
-    implicitly[SendOff[Unreliable]].sendOff(conn, Write(protoMsgEvent))
+    implicitly[SendOff[EventPart, Unreliable]].sendOff(conn, Write(event))
   }
 }

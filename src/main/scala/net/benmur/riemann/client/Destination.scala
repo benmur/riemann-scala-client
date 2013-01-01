@@ -2,9 +2,6 @@ package net.benmur.riemann.client
 
 import java.net.SocketAddress
 
-import scala.annotation.implicitNotFound
-import scala.collection.JavaConversions.iterableAsScalaIterable
-
 import akka.actor.ActorSystem
 import akka.dispatch.Future
 import akka.util.Timeout
@@ -17,26 +14,21 @@ trait DestinationOps {
 
   class RiemannDestination[T <: TransportType](baseEvent: EventPart, val connection: Connection[T])(implicit system: ActorSystem, timeout: Timeout)
       extends Destination[T] {
-    
-    def send(event: EventPart)(implicit messenger: SendOff[T]): Unit =
-      messenger.sendOff(connection, Write(
-        Serializers.serializeEventPartToProtoMsg(EventDSL.mergeEvents(baseEvent, event))))
 
-    def ask(event: EventPart)(implicit messenger: SendAndExpectFeedback[T]): Future[Either[RemoteError, List[EventPart]]] =
-      messenger.send(connection, Write(
-        Serializers.serializeEventPartToProtoMsg(EventDSL.mergeEvents(baseEvent, event))))
+    def send(event: EventPart)(implicit messenger: SendOff[EventPart, T]): Unit =
+      messenger.sendOff(connection, Write(EventDSL.mergeEvents(baseEvent, event)))
 
-    def send(events: Iterable[EventPart])(implicit messenger: SendOff[T]): Unit =
-      messenger.sendOff(connection, Write(
-        Serializers.serializeEventPartsToProtoMsg(events map (EventDSL.mergeEvents(baseEvent, _)))))
+    def ask(event: EventPart)(implicit messenger: SendAndExpectFeedback[EventPart, T]): Future[Either[RemoteError, List[EventPart]]] =
+      messenger.send(connection, Write(EventDSL.mergeEvents(baseEvent, event)))
 
-    def ask(events: Iterable[EventPart])(implicit messenger: SendAndExpectFeedback[T]): Future[Either[RemoteError, List[EventPart]]] =
-      messenger.send(connection, Write(
-        Serializers.serializeEventPartsToProtoMsg(events map (EventDSL.mergeEvents(baseEvent, _)))))
+    def send(events: EventSeq)(implicit messenger: SendOff[EventSeq, T]): Unit =
+      messenger.sendOff(connection, Write(EventSeq(events.events map (EventDSL.mergeEvents(baseEvent, _)): _*)))
 
-    def ask(query: Query)(implicit messenger: SendAndExpectFeedback[T]): Future[Either[RemoteError, List[EventPart]]] =
-      messenger.send(connection, Write(
-        Serializers.serializeQueryToProtoMsg(query)))
+    def ask(events: EventSeq)(implicit messenger: SendAndExpectFeedback[EventSeq, T]): Future[Either[RemoteError, List[EventPart]]] =
+      messenger.send(connection, Write(EventSeq(events.events map (EventDSL.mergeEvents(baseEvent, _)): _*)))
+
+    def ask(query: Query)(implicit messenger: SendAndExpectFeedback[Query, T]): Future[Either[RemoteError, List[EventPart]]] =
+      messenger.send(connection, Write(query))
 
     def withValues(event: EventPart): RiemannDestination[T] =
       new RiemannDestination[T](EventDSL.mergeEvents(baseEvent, event), connection)

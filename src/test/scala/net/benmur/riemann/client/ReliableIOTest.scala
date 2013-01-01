@@ -1,24 +1,19 @@
 package net.benmur.riemann.client
 
-import org.scalatest.FunSuite
-import net.benmur.riemann.client.testingsupport.TestingTransportSupport
-import akka.actor.ActorSystem
-import java.net.InetSocketAddress
-import java.net.Socket
-import org.scalatest.BeforeAndAfterAll
-import org.scalamock.scalatest.MockFactory
+import java.io.{ ByteArrayInputStream, ByteArrayOutputStream, DataInputStream, DataOutputStream }
+import java.net.{ InetSocketAddress, SocketAddress }
+
 import org.scalamock.ProxyMockFactory
+import org.scalamock.scalatest.MockFactory
+import org.scalatest.{ BeforeAndAfterAll, FunSuite }
 import org.scalatest.matchers.ShouldMatchers
-import java.net.SocketAddress
-import akka.testkit.CallingThreadDispatcher
-import org.scalamock.annotation.mock
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.DataInputStream
-import java.io.DataOutputStream
+
 import com.aphyr.riemann.Proto
+
+import akka.actor.ActorSystem
 import akka.dispatch.Await
-import akka.util.duration._
+import akka.testkit.CallingThreadDispatcher
+import akka.util.duration.intToDurationInt
 
 class ReliableIOTest extends FunSuite
     with BeforeAndAfterAll
@@ -27,7 +22,7 @@ class ReliableIOTest extends FunSuite
     with ShouldMatchers {
 
   import ReliableIO._
-  import TestingTransportSupport._
+  import testingsupport.TestingTransportSupport._
 
   implicit val system = ActorSystem()
   val address = new InetSocketAddress(0)
@@ -49,7 +44,7 @@ class ReliableIOTest extends FunSuite
     socketFactory expects address returning wrapper once
 
     val conn = implicitly[ConnectionBuilder[Reliable]].buildConnection(address, Some(socketFactory), Some(CallingThreadDispatcher.Id))
-    implicitly[SendOff[Reliable]].sendOff(conn, Write(protoMsgEvent))
+    implicitly[SendOff[EventPart, Reliable]].sendOff(conn, Write(event))
 
     val out = oos.toByteArray
     val outRef = protoMsgEvent.toByteArray
@@ -76,7 +71,7 @@ class ReliableIOTest extends FunSuite
     socketFactory expects address returning wrapper once
 
     val conn = implicitly[ConnectionBuilder[Reliable]].buildConnection(address, Some(socketFactory), Some(CallingThreadDispatcher.Id))
-    val respFuture = implicitly[SendAndExpectFeedback[Reliable]].send(conn, Write(protoMsgEvent))
+    val respFuture = implicitly[SendAndExpectFeedback[EventPart, Reliable]].send(conn, Write(event))
 
     val out = oos.toByteArray
     val outRef = protoMsgEvent.toByteArray

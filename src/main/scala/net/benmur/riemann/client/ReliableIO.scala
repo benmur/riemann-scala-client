@@ -1,19 +1,20 @@
 package net.benmur.riemann.client
 
 import java.io.{ DataInputStream, DataOutputStream }
-import java.net.{ Socket, SocketAddress }
+import java.net.{ Socket, SocketAddress, SocketException }
 import java.util.concurrent.atomic.AtomicLong
+
+import scala.annotation.implicitNotFound
+
 import com.aphyr.riemann.Proto
-import akka.actor.{ Actor, ActorLogging, ActorSystem, Props, actorRef2Scala }
-import akka.dispatch.Future
+
+import akka.actor.{ Actor, ActorLogging, ActorRef, ActorSystem, OneForOneStrategy, Props }
+import akka.actor.SupervisorStrategy.Restart
+import akka.actor.actorRef2Scala
+import akka.dispatch.{ Future, Promise }
 import akka.pattern.ask
 import akka.util.Timeout
-import akka.dispatch.Promise
-import akka.actor.OneForOneStrategy
-import akka.actor.SupervisorStrategy._
-import akka.util.duration._
-import akka.actor.ActorRef
-import java.net.SocketException
+import akka.util.duration.intToDurationInt
 
 trait ReliableIO {
   private val nClients = new AtomicLong(0L) // FIXME this should be more global
@@ -35,21 +36,34 @@ trait ReliableIO {
     }
   }
 
-  implicit object ReliableSendAndExpectFeedback extends SendAndExpectFeedback[Reliable] {
-    def send(connection: Connection[Reliable], command: Write)(implicit system: ActorSystem, timeout: Timeout): Future[Either[RemoteError, List[EventPart]]] =
+  implicit object ReliableEventPartSendAndExpectFeedback extends SendAndExpectFeedback[EventPart, Reliable] {
+    def send(connection: Connection[Reliable], command: Write[EventPart])(implicit system: ActorSystem, timeout: Timeout): Future[Either[RemoteError, List[EventPart]]] =
       connection match {
         case rc: ReliableConnection =>
-          (rc.ioActor ask command).mapTo[Either[RemoteError, List[EventPart]]]
+          val data = Serializers.serializeEventPartToProtoMsg(command.m).toByteArray
+          (rc.ioActor ask WriteBinary(data)).mapTo[Either[RemoteError, List[EventPart]]]
         case c =>
           Promise.successful(Left(RemoteError(
             "don't know how to send data to " + c.getClass.getName)))
       }
   }
 
-  implicit object ReliableSendOff extends SendOff[Reliable] {
-    def sendOff(connection: Connection[Reliable], command: Write): Unit = connection match {
+  implicit object ReliableQuerySendAndExpectFeedback extends SendAndExpectFeedback[Query, Reliable] {
+    def send(connection: Connection[Reliable], command: Write[Query])(implicit system: ActorSystem, timeout: Timeout): Future[Either[RemoteError, List[EventPart]]] =
+      connection match {
+        case rc: ReliableConnection =>
+          val data = Serializers.serializeQueryToProtoMsg(command.m).toByteArray
+          (rc.ioActor ask WriteBinary(data)).mapTo[Either[RemoteError, List[EventPart]]]
+        case c =>
+          Promise.successful(Left(RemoteError(
+            "don't know how to send data to " + c.getClass.getName)))
+      }
+  }
+
+  implicit object ReliableSendOff extends SendOff[EventPart, Reliable] {
+    def sendOff(connection: Connection[Reliable], command: Write[EventPart]): Unit = connection match {
       case rc: ReliableConnection =>
-        rc.ioActor tell command
+        rc.ioActor tell WriteBinary(Serializers.serializeEventPartToProtoMsg(command.m).toByteArray)
       case c =>
         System.err.println(
           "don't know how to send data to " + c.getClass.getName)
@@ -62,9 +76,8 @@ trait ReliableIO {
     val inputStream = new DataInputStream(connection.inputStream)
     println("actor init")
     def receive = {
-      case Write(msg) =>
+      case WriteBinary(ab) =>
         try {
-          val ab = msg.toByteArray
           outputStream writeInt ab.length
           outputStream write ab
           outputStream.flush

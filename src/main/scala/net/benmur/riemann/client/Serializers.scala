@@ -1,6 +1,5 @@
 package net.benmur.riemann.client
 
-import scala.Option.option2Iterable
 import scala.collection.JavaConversions.{ asJavaIterable, iterableAsScalaIterable }
 
 import com.aphyr.riemann.Proto
@@ -10,10 +9,10 @@ trait Serializers {
     .setQuery(Proto.Query.newBuilder().setString(q.q))
     .build
 
-  def serializeEventPartToProtoMsg(e: EventPart) = serializeEventPartsToProtoMsg(Some(e))
+  def serializeEventPartToProtoMsg(e: EventPart) = serializeEventPartsToProtoMsg(EventSeq(e))
 
-  def serializeEventPartsToProtoMsg(ei: Iterable[EventPart]) = Proto.Msg.newBuilder
-    .addAllEvents(ei map convertOneEventPart)
+  def serializeEventPartsToProtoMsg(ei: EventSeq) = Proto.Msg.newBuilder
+    .addAllEvents(ei.events map convertOneEventPart)
     .build
 
   def unserializeProtoMsg(m: Proto.Msg): Either[RemoteError, List[EventPart]] = m.hasOk match {

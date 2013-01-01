@@ -2,9 +2,12 @@ package net.benmur.riemann.client
 
 import java.net.{ DatagramPacket, DatagramSocket, SocketAddress }
 import java.util.concurrent.atomic.AtomicLong
+
+import scala.annotation.implicitNotFound
+import scala.collection.mutable.WrappedArray
+
 import akka.actor.{ Actor, ActorSystem, Props }
 import akka.util.Timeout
-import scala.collection.mutable.WrappedArray
 
 trait UnreliableIO {
   private val nClients = new AtomicLong(0L) // FIXME this should be more global
@@ -17,17 +20,19 @@ trait UnreliableIO {
     val ioActor = system.actorOf(props, "riemann-udp-client-" + nClients.incrementAndGet)
   }
 
-  implicit object UnreliableSendOff extends SendOff[Unreliable] {
-    def sendOff(connection: Connection[Unreliable], command: Write): Unit = connection match {
-      case uc: UnreliableConnection => uc.ioActor tell command
-      case c                        => System.err.println("don't know how to send data to " + c.getClass.getName)
+  implicit object UnreliableSendOff extends SendOff[EventPart, Unreliable] {
+    def sendOff(connection: Connection[Unreliable], command: Write[EventPart]): Unit = connection match {
+      case uc: UnreliableConnection =>
+        val data = Serializers.serializeEventPartToProtoMsg(command.m).toByteArray
+        uc.ioActor tell WriteBinary(data)
+      case c => System.err.println("don't know how to send data to " + c.getClass.getName)
     }
   }
 
   private[this] class UnconnectedConnectionActor(where: SocketAddress, factory: Unreliable#SocketFactory) extends Actor {
     val connection = factory(where)
     def receive = {
-      case Write(msg) => connection send msg.toByteArray
+      case WriteBinary(data) => connection send data
     }
   }
 

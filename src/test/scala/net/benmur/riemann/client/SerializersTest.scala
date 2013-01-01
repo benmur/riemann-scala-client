@@ -1,12 +1,14 @@
 package net.benmur.riemann.client
-import org.scalatest.FunSuite
-import com.aphyr.riemann.Proto
-import net.benmur.riemann.client.testingsupport.SerializersFixture
+
 import scala.collection.JavaConversions.asJavaIterable
+
+import org.scalatest.FunSuite
+
+import com.aphyr.riemann.Proto
 
 class SerializersTest extends FunSuite {
   import Serializers._
-  import SerializersFixture._
+  import testingsupport.SerializersFixture._
 
   test("out: convert a full EventPart to a protobuf Msg") {
     val expected = Proto.Msg.newBuilder.addEvents(protobufEvent1).build
@@ -119,7 +121,7 @@ class SerializersTest extends FunSuite {
     val expected = Proto.Msg.newBuilder.addEvents(protobufEvent1).addEvents(protobufEvent2).build
 
     expect(expected) {
-      serializeEventPartsToProtoMsg(List(event1, event2))
+      serializeEventPartsToProtoMsg(EventSeq(event1, event2))
     }
   }
 

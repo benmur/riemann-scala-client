@@ -1,13 +1,16 @@
 package net.benmur.riemann.client
 
-import java.io.{ InputStream, OutputStream }
+import java.io.{InputStream, OutputStream}
 import java.net.SocketAddress
+
 import scala.annotation.implicitNotFound
-import com.aphyr.riemann.Proto
+import scala.collection.mutable.WrappedArray
+
 import akka.actor.ActorSystem
 import akka.dispatch.Future
 import akka.util.Timeout
-import scala.collection.mutable.WrappedArray
+
+sealed trait RiemannSendable
 
 case class EventPart(
   host: Option[String] = None,
@@ -17,11 +20,15 @@ case class EventPart(
   description: Option[String] = None,
   tags: Iterable[String] = Nil,
   metric: Option[AnyVal] = None,
-  ttl: Option[Float] = None)
+  ttl: Option[Float] = None) extends RiemannSendable
 
-case class Query(q: String)
+case class EventSeq(events: EventPart*) extends RiemannSendable
 
-case class Write(m: Proto.Msg)
+case class Query(q: String) extends RiemannSendable
+
+case class Write[T <: RiemannSendable](m: T)
+
+case class WriteBinary(data: Array[Byte])
 
 case class RemoteError(message: String) extends Throwable
 
@@ -47,11 +54,11 @@ trait UnconnectedSocketWrapper {
 }
 
 trait Destination[T <: TransportType] {
-  def send(event: EventPart)(implicit messenger: SendOff[T]): Unit
-  def ask(event: EventPart)(implicit messenger: SendAndExpectFeedback[T]): Future[Either[RemoteError, List[EventPart]]]
-  def send(events: Iterable[EventPart])(implicit messenger: SendOff[T]): Unit
-  def ask(events: Iterable[EventPart])(implicit messenger: SendAndExpectFeedback[T]): Future[Either[RemoteError, List[EventPart]]]
-  def ask(query: Query)(implicit messenger: SendAndExpectFeedback[T]): Future[Either[RemoteError, List[EventPart]]]
+  def send(event: EventPart)(implicit messenger: SendOff[EventPart, T]): Unit
+  def ask(event: EventPart)(implicit messenger: SendAndExpectFeedback[EventPart, T]): Future[Either[RemoteError, List[EventPart]]]
+  def send(events: EventSeq)(implicit messenger: SendOff[EventSeq, T]): Unit
+  def ask(events: EventSeq)(implicit messenger: SendAndExpectFeedback[EventSeq, T]): Future[Either[RemoteError, List[EventPart]]]
+  def ask(query: Query)(implicit messenger: SendAndExpectFeedback[Query, T]): Future[Either[RemoteError, List[EventPart]]]
   def withValues(event: EventPart): Destination[T]
 }
 
@@ -60,12 +67,12 @@ trait ConnectionBuilder[T <: TransportType] {
   def buildConnection(where: SocketAddress, factory: Option[T#SocketFactory] = None, dispatcherId: Option[String] = None)(implicit system: ActorSystem, timeout: Timeout): Connection[T]
 }
 
-@implicitNotFound(msg = "Connection type ${T} does not allow sending to Riemann because there is no implicit in scope returning a implementation of SendOff[${T}].")
-trait SendOff[T <: TransportType] {
-  def sendOff(connection: Connection[T], command: Write): Unit
+@implicitNotFound(msg = "Connection type ${T} does not allow sending to ${S} Riemann because there is no implicit in scope returning a implementation of SendOff[${S}, ${T}].")
+trait SendOff[S <: RiemannSendable, T <: TransportType] {
+  def sendOff(connection: Connection[T], command: Write[S]): Unit
 }
 
-@implicitNotFound(msg = "Connection type ${T} does not allow getting feedback from Riemann.")
-trait SendAndExpectFeedback[T <: TransportType] {
-  def send(connection: Connection[T], command: Write)(implicit system: ActorSystem, timeout: Timeout): Future[Either[RemoteError, List[EventPart]]]
+@implicitNotFound(msg = "Connection type ${T} does not allow getting feedback from Riemann after sending ${S} because there is no implicit in scope returning a implementation of SendAndExpectFeedback[${S}, ${T}].")
+trait SendAndExpectFeedback[S <: RiemannSendable, T <: TransportType] {
+  def send(connection: Connection[T], command: Write[S])(implicit system: ActorSystem, timeout: Timeout): Future[Either[RemoteError, List[EventPart]]]
 }

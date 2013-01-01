@@ -1,4 +1,5 @@
 package net.benmur.riemann.client.testingsupport
+
 import scala.collection.JavaConversions.asJavaIterable
 
 import com.aphyr.riemann.Proto

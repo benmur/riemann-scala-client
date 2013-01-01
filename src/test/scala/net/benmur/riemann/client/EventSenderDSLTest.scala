@@ -24,7 +24,7 @@ class EventSenderDSLTest extends FunSuite with BeforeAndAfterAll {
   test("DSL operator to send an event without expecting a result") {
     val (conn, dest) = makeDestination
 
-    expect(Write(protoMsgEvent)) {
+    expect(Write(event)) {
       event |>> dest
       conn.sentOff
     }
@@ -33,7 +33,7 @@ class EventSenderDSLTest extends FunSuite with BeforeAndAfterAll {
   test("DSL operator to send operator to send an event expecting a status") {
     val (conn, dest) = makeDestination
 
-    expect(Write(protoMsgEvent)) {
+    expect(Write(event)) {
       event |>< dest
       conn.sentExpect
     }
@@ -42,7 +42,7 @@ class EventSenderDSLTest extends FunSuite with BeforeAndAfterAll {
   test("DSL operator to send operator to send a query expecting a status") {
     val (conn, dest) = makeDestination
 
-    expect(Write(protoMsgQuery)) {
+    expect(Write(Query("true"))) {
       Query("true") |>< dest
       conn.sentExpect
     }
