@@ -1,7 +1,7 @@
 # riemann-scala-client
 
-Scala client for sending events to [Riemann](http://aphyr.github.com/riemann/). ![Travis build status](https://api.travis-ci.org/benmur/riemann-scala-client.png)
-
+Scala client for sending events to [Riemann](http://aphyr.github.com/riemann/). 
+[![Build Status](https://api.travis-ci.org/benmur/riemann-scala-client.png)](https://travis-ci.org/benmur/riemann-scala-client/)
 ## Usage
 
 ### Fire-and-forget mode (over UDP)
