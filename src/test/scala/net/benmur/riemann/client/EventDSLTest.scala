@@ -11,6 +11,12 @@ class EventDSLTest extends FunSuite {
     }
   }
 
+  test("provide an EventPart builder function for empty events") {
+    expect(EventPart()) {
+      oneEvent()
+    }
+  }
+
   test("provide an EventPart builder function for service") {
     expect(EventPart(service = Some("se"))) {
       service("se")

@@ -17,6 +17,7 @@ trait EventDSL {
 
   implicit def eventPartToEventPartCombinator(e: EventPart) = new EventPartCombinator(e)
 
+  def oneEvent() = EventPart()
   def host(s: String) = EventPart(host = Some(s))
   def service(s: String) = EventPart(service = Some(s))
   def state(s: String) = EventPart(state = Some(s))
