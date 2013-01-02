@@ -1,6 +1,6 @@
 # riemann-scala-client
 
-Scala client for sending events to [Riemann](http://riemann.io/), featuring strong typing, asynchronous API (using [Akka](http://akka.io/) under the hood) and a DSL to avoid cluttering the application codebase with metrics-related code.
+Scala client library for sending events to [Riemann](http://riemann.io/), featuring strong typing, asynchronous API (using [Akka](http://akka.io/) under the hood) and a DSL to avoid cluttering the application codebase with metrics-related code.
 
 [![Build Status](https://api.travis-ci.org/benmur/riemann-scala-client.png)](https://travis-ci.org/benmur/riemann-scala-client/)
 
@@ -84,8 +84,8 @@ val metricsDestination = riemannConnectAs[Reliable] to new
 
 state("warning") | metric(0.5) |>< metricsDestination onComplete {
   case Left(exception) => // ...
-  case Right(false) => println("not sent ok!!")
-  case Right(true) => println("sent ok")
+  case Right(false)    => println("not sent ok!!")
+  case Right(true)     => println("sent ok")
 }
 ```
 
@@ -95,7 +95,7 @@ val metricsDestination = riemannConnectAs[Reliable] to new InetSocketAddress("lo
 
 Query("tagged \"slow\"") |>< metricsDestination onComplete {
   case Left(exception) => // ...
-  case Right(events) => events foreach println
+  case Right(events)   => events foreach println
 }
 ```
 
