@@ -11,7 +11,7 @@ import net.benmur.riemann.client._
 trait TestingTransportSupport {
   import RiemannClient._
 
-  implicit val timeout = Timeout(1 millisecond)
+  implicit val timeout = Timeout(10 seconds)
 
   implicit object TestingTransportEventPartSendOff extends SendOff[EventPart, TestingTransport] {
     def sendOff(connection: Connection[TestingTransport], command: Write[EventPart]): Unit = connection match {
