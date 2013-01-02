@@ -39,7 +39,7 @@ Please note that operations returning a Future won't compile if the connection i
 
 Building an event is done by combining event parts. Each part is optional, as per the [Protocol Buffers definition](https://github.com/aphyr/riemann-java-client/blob/master/src/main/proto/riemann/proto.proto). Here is how to build a completely populated event:
 ```scala
-val event = host("hostname") | service("service xyz") | state("warning") | time(1234L) | 
+val event = oneEvent() | host("hostname") | service("service xyz") | state("warning") | time(1234L) | 
             description("metric is way too high") | tags("performance", "slow", "provider-xyz") | 
             metric(0.8f) | ttl(120L)
 
@@ -49,7 +49,7 @@ val event2 = EventPart(host=Some("hostname"), service=Some("service xyz"), state
              tags=Seq("performance", "slow", "provider-xyz"), metric=Some(0.8f), ttl=Some(120L))
 ```
 
-### Settings default event values
+### Setting default event values
 ```scala
 // given these declarations:
 val destination = riemannConnectAs[Reliable] to new InetSocketAddress("localhost", 5555)
@@ -59,6 +59,10 @@ val destinationWithDefaults = destination withValues(host("host") | service("ser
 state("warning") | metric(0.5) |>> destinationWithDefaults
 // is the same as:
 host("host") | service("service response time") | state("warning") | metric(0.5) |>> destination
+
+// implementing a counter or heartbeat is easy:
+val signupCounter = destination withValues(service("Successful user registration"))
+oneEvent() |>> signupCounter
 ```
 
 ### Sending events: fire-and-forget mode (over UDP)
