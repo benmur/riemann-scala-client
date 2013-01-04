@@ -1,26 +1,18 @@
 package net.benmur.riemann.client
 
-import java.net.InetSocketAddress
-import org.scalatest.{ BeforeAndAfterAll, FunSuite }
-import org.scalatest.matchers.ShouldMatchers
-import RiemannClient.{ host, riemannConnectAs, service, state }
-import akka.actor.ActorSystem
 import org.scalamock.ProxyMockFactory
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.FunSuite
+import org.scalatest.matchers.ShouldMatchers
+
+import RiemannClient.riemannConnectAs
 
 class RiemannClientWithDestinationAPITest extends FunSuite
-    with BeforeAndAfterAll
+    with testingsupport.ImplicitActorSystem
     with ShouldMatchers
     with MockFactory
     with ProxyMockFactory {
   import testingsupport.TestingTransportSupport._
-
-  implicit val system = ActorSystem()
-  val address = new InetSocketAddress(0)
-
-  override def afterAll {
-    system.shutdown
-  }
 
   test("entry point to create a connection (pristine state)") {
     val dest = riemannConnectAs[TestingTransport] to address
@@ -75,6 +67,6 @@ class RiemannClientWithDestinationAPITest extends FunSuite
     val ev = EventPart(host = Some("h"), service = Some("s"), state = Some("ok"))
     sender expects 'sendOff withArguments (dest.connection, Write(ev)) once
 
-    dest send state("ok")
+    dest send EventPart(state = Some("ok"))
   }
 }

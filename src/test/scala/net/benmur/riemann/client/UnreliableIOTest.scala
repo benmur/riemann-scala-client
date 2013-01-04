@@ -1,33 +1,25 @@
 package net.benmur.riemann.client
 
-import java.net.{ InetSocketAddress, SocketAddress }
+import java.net.SocketAddress
 
-import scala.annotation.implicitNotFound
 import scala.collection.mutable.WrappedArray
 
 import org.scalamock.ProxyMockFactory
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{ BeforeAndAfterAll, FunSuite }
+import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 
 import akka.actor.ActorSystem
 import akka.testkit.CallingThreadDispatcher
 
 class UnreliableIOTest extends FunSuite
-    with BeforeAndAfterAll
+    with testingsupport.ImplicitActorSystem
     with MockFactory
     with ProxyMockFactory
     with ShouldMatchers {
 
   import UnreliableIO._
   import testingsupport.TestingTransportSupport._
-
-  implicit val system = ActorSystem()
-  val address = new InetSocketAddress(0)
-
-  override def afterAll {
-    system.shutdown
-  }
 
   test("send a protobuf Msg") {
     val socket = mock[UnconnectedSocketWrapper]

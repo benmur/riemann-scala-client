@@ -1,11 +1,11 @@
 package net.benmur.riemann.client
 
 import java.io.{ ByteArrayInputStream, ByteArrayOutputStream, DataInputStream, DataOutputStream }
-import java.net.{ InetSocketAddress, SocketAddress }
+import java.net.SocketAddress
 
 import org.scalamock.ProxyMockFactory
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{ BeforeAndAfterAll, FunSuite }
+import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 
 import com.aphyr.riemann.Proto
@@ -16,20 +16,13 @@ import akka.testkit.CallingThreadDispatcher
 import akka.util.duration.intToDurationInt
 
 class ReliableIOTest extends FunSuite
-    with BeforeAndAfterAll
+    with testingsupport.ImplicitActorSystem
     with MockFactory
     with ProxyMockFactory
     with ShouldMatchers {
 
   import ReliableIO._
   import testingsupport.TestingTransportSupport._
-
-  implicit val system = ActorSystem()
-  val address = new InetSocketAddress(0)
-
-  override def afterAll {
-    system.shutdown
-  }
 
   test("sending a protobuf Msg with Event") {
     val in = Array.ofDim[Byte](256)

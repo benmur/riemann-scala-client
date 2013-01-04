@@ -1,14 +1,11 @@
 package net.benmur.riemann.client
-
-import org.scalatest.{ BeforeAndAfterAll, FunSuite }
-import com.aphyr.riemann.Proto
-import akka.actor.ActorSystem
-import net.benmur.riemann.client.testingsupport.TestingTransportSupport
-import org.scalamock.scalatest.MockFactory
 import org.scalamock.ProxyMockFactory
+import org.scalamock.scalatest.MockFactory
+import org.scalatest.FunSuite
+import net.benmur.riemann.client.testingsupport.TestingTransportSupport
 
 class EventSenderDSLTest extends FunSuite
-    with BeforeAndAfterAll
+    with testingsupport.ImplicitActorSystem
     with MockFactory
     with ProxyMockFactory {
 
@@ -16,12 +13,6 @@ class EventSenderDSLTest extends FunSuite
   import DestinationOps.RiemannDestination
   import TestingTransportSupport._
   import EventSenderDSL._
-
-  implicit val system = ActorSystem()
-
-  override def afterAll {
-    system.shutdown
-  }
 
   def makeDestination = {
     val conn = new TestingTransportConnection

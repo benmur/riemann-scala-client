@@ -12,6 +12,7 @@ trait TestingTransportSupport {
   import RiemannClient._
 
   implicit val timeout = Timeout(10 seconds)
+  val address = new InetSocketAddress(0)
 
   class TestingTransportConnection(val where: SocketAddress = new InetSocketAddress(0)) extends Connection[TestingTransport]
 
