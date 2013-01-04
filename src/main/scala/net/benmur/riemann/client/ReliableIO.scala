@@ -3,24 +3,22 @@ package net.benmur.riemann.client
 import java.io.{ DataInputStream, DataOutputStream }
 import java.net.{ Socket, SocketAddress, SocketException }
 import java.util.concurrent.atomic.AtomicLong
-
 import scala.annotation.implicitNotFound
-
 import com.aphyr.riemann.Proto
-
 import akka.actor.{ Actor, ActorLogging, ActorRef, ActorSystem, OneForOneStrategy, Props }
-import akka.actor.SupervisorStrategy.Restart
+import akka.actor.SupervisorStrategy._
 import akka.actor.actorRef2Scala
 import akka.dispatch.{ Future, Promise }
 import akka.pattern.ask
 import akka.util.Timeout
 import akka.util.duration.intToDurationInt
+import akka.actor.ActorInitializationException
 
 trait ReliableIO {
   private val nClients = new AtomicLong(0L) // FIXME this should be more global
 
   private[this] class ReliableConnectionActor(where: SocketAddress, factory: Reliable#SocketFactory, dispatcherId: Option[String])(implicit system: ActorSystem) extends Actor {
-    override val supervisorStrategy = OneForOneStrategy(maxNrOfRetries = 36000, withinTimeRange = 1 hour) { // This needs to be more reasonable
+    override val supervisorStrategy = OneForOneStrategy(maxNrOfRetries = 2, withinTimeRange = 1 second) { // This needs to be more reasonable
       case _ => Restart
     }
 
@@ -71,10 +69,10 @@ trait ReliableIO {
   }
 
   class TcpConnectionActor(where: SocketAddress, factory: Reliable#SocketFactory) extends Actor with ActorLogging {
-    val connection = factory(where)
-    val outputStream = new DataOutputStream(connection.outputStream)
-    val inputStream = new DataInputStream(connection.inputStream)
-    println("actor init")
+    lazy val connection = factory(where)
+    lazy val outputStream = new DataOutputStream(connection.outputStream)
+    lazy val inputStream = new DataInputStream(connection.inputStream)
+
     def receive = {
       case WriteBinary(ab) =>
         try {
@@ -88,7 +86,8 @@ trait ReliableIO {
           case e: SocketException => throw e
           case exception =>
             log.error(exception, "could not send or receive data")
-            sender ! Proto.Msg.newBuilder.setError(exception.getMessage).setOk(false).build
+            val message = Option(exception.getMessage) getOrElse "(no message)"
+            sender ! Proto.Msg.newBuilder.setError(message).setOk(false).build
         }
     }
   }

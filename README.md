@@ -121,9 +121,9 @@ Care has been taken to be as reliable as possible, because sending metrics shoul
 - All API-visible data structures are immutable and concurrency-friendly
 - Network writes are serialized through Akka actors
 - Exceptions are ignored silently (only logged to the akka event bus)
+- Failed connections are retried at most twice per second
 
 Remaining items include :
-- Add explicit unit tests for TCP reconnections (which already work thanks to Akka automatically respawning failed actors).
 - Hybrid tcp/udp connection mode
 - Retrying failed Writes after reconnecting (with a counter)
 - Shutdown/closing
