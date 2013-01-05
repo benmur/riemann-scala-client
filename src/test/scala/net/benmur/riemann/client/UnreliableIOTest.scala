@@ -22,10 +22,10 @@ class UnreliableIOTest extends FunSuite
   import testingsupport.TestingTransportSupport._
 
   test("send a protobuf Msg") {
-    val socket = mock[UnconnectedSocketWrapper]
+    val socket = mock[Unreliable.SocketWrapper]
     socket expects 'send withArguments (WrappedArray.make(protoMsgEvent.toByteArray)) once
 
-    val socketFactory = mockFunction[SocketAddress, UnconnectedSocketWrapper]
+    val socketFactory = mockFunction[SocketAddress, Unreliable.SocketWrapper]
     socketFactory expects address returning socket once
 
     val conn = implicitly[ConnectionBuilder[Unreliable]].buildConnection(address, Some(socketFactory), Some(CallingThreadDispatcher.Id))

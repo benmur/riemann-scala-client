@@ -40,7 +40,7 @@ class RiemannClientWithDestinationAPITest extends FunSuite
   test("entry point to create a connection (sending an event expecting feedback)") {
     val dest = riemannConnectAs[TestingTransport] to address
     implicit val sender = mock[SendAndExpectFeedback[EventPart, Boolean, TestingTransport]]
-    sender expects 'send withArguments (dest.connection, Write(event), system, timeout) once
+    sender expects 'send withArguments (dest.connection, Write(event), timeout) once
 
     dest ask event
   }
@@ -48,7 +48,7 @@ class RiemannClientWithDestinationAPITest extends FunSuite
   test("entry point to create a connection (sending multiple events expecting feedback)") {
     val dest = riemannConnectAs[TestingTransport] to address
     implicit val sender = mock[SendAndExpectFeedback[EventSeq, Boolean, TestingTransport]]
-    sender expects 'send withArguments (dest.connection, Write(EventSeq(event, event2)), system, timeout) once
+    sender expects 'send withArguments (dest.connection, Write(EventSeq(event, event2)), timeout) once
 
     dest ask EventSeq(event, event2)
   }
@@ -56,7 +56,7 @@ class RiemannClientWithDestinationAPITest extends FunSuite
   test("entry point to create a connection (sending an query)") {
     val dest = riemannConnectAs[TestingTransport] to address
     implicit val sender = mock[SendAndExpectFeedback[Query, Iterable[EventPart], TestingTransport]]
-    sender expects 'send withArguments (dest.connection, Write(Query("true")), system, timeout) once
+    sender expects 'send withArguments (dest.connection, Write(Query("true")), timeout) once
 
     dest ask Query("true")
   }

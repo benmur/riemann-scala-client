@@ -12,7 +12,7 @@ trait DestinationOps {
       new RiemannDestination[T](EventPart(), connectionBuilder.buildConnection(where))
   }
 
-  class RiemannDestination[T <: TransportType](baseEvent: EventPart, val connection: Connection[T])(implicit system: ActorSystem, timeout: Timeout)
+  class RiemannDestination[T <: TransportType](baseEvent: EventPart, val connection: T#Connection)(implicit timeout: Timeout)
       extends Destination[T] {
 
     def send(event: EventPart)(implicit messenger: SendOff[EventPart, T]): Unit =

@@ -2,13 +2,12 @@ package net.benmur.riemann.client
 
 import java.io.{ InputStream, OutputStream }
 import java.net.SocketAddress
-
 import scala.annotation.implicitNotFound
 import scala.collection.mutable.WrappedArray
-
 import akka.actor.ActorSystem
 import akka.dispatch.Future
 import akka.util.Timeout
+import akka.actor.ActorRef
 
 sealed trait RiemannSendable
 
@@ -33,27 +32,36 @@ case class WriteBinary(data: Array[Byte])
 case class RemoteError(message: String) extends Throwable
 
 trait TransportType {
+  type Connection
   type SocketWrapper
   type SocketFactory = SocketAddress => SocketWrapper
 }
 
-trait Reliable extends TransportType {
+object Reliable extends TransportType {
   type SocketWrapper = ConnectedSocketWrapper
+  type Connection = TcpActorConnectionHandle
+
+  trait ConnectedSocketWrapper {
+    def inputStream: InputStream
+    def outputStream: OutputStream
+  }
+
+  trait TcpActorConnectionHandle {
+    val ioActor: ActorRef
+  }
 }
 
-trait Unreliable extends TransportType {
+object Unreliable extends TransportType {
   type SocketWrapper = UnconnectedSocketWrapper
-}
+  type Connection = UdpActorConnectionHandle
 
-trait Connection[T <: TransportType]
+  trait UnconnectedSocketWrapper {
+    def send(data: WrappedArray[Byte]): Unit
+  }
 
-trait ConnectedSocketWrapper {
-  def inputStream: InputStream
-  def outputStream: OutputStream
-}
-
-trait UnconnectedSocketWrapper {
-  def send(data: WrappedArray[Byte]): Unit
+  trait UdpActorConnectionHandle {
+    val ioActor: ActorRef
+  }
 }
 
 trait Destination[T <: TransportType] {
@@ -67,15 +75,15 @@ trait Destination[T <: TransportType] {
 
 @implicitNotFound(msg = "No way of building a connection to Riemann of type ${T}.")
 trait ConnectionBuilder[T <: TransportType] {
-  def buildConnection(where: SocketAddress, factory: Option[T#SocketFactory] = None, dispatcherId: Option[String] = None)(implicit system: ActorSystem, timeout: Timeout): Connection[T]
+  def buildConnection(where: SocketAddress, factory: Option[T#SocketFactory] = None, dispatcherId: Option[String] = None)(implicit system: ActorSystem, timeout: Timeout): T#Connection
 }
 
 @implicitNotFound(msg = "Connection type ${T} does not allow sending to ${S} Riemann because there is no implicit in scope returning a implementation of SendOff[${S}, ${T}].")
 trait SendOff[S <: RiemannSendable, T <: TransportType] {
-  def sendOff(connection: Connection[T], command: Write[S]): Unit
+  def sendOff(connection: T#Connection, command: Write[S]): Unit
 }
 
 @implicitNotFound(msg = "Connection type ${T} does not allow getting feedback from Riemann after sending ${S} because there is no implicit in scope returning a implementation of SendAndExpectFeedback[${S}, ${T}].")
 trait SendAndExpectFeedback[S <: RiemannSendable, R, T <: TransportType] {
-  def send(connection: Connection[T], command: Write[S])(implicit system: ActorSystem, timeout: Timeout): Future[R]
+  def send(connection: T#Connection, command: Write[S])(implicit timeout: Timeout): Future[R]
 }

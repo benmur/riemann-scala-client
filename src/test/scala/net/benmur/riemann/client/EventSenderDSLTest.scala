@@ -31,7 +31,7 @@ class EventSenderDSLTest extends FunSuite
   test("DSL operator to send operator to send an event expecting a status") {
     val (conn, dest) = makeDestination
     implicit val sender = mock[SendAndExpectFeedback[EventPart, Boolean, TestingTransport]]
-    sender expects 'send withArguments (conn, Write(event), system, timeout) once
+    sender expects 'send withArguments (conn, Write(event), timeout) once
 
     event |>< dest
   }
@@ -41,7 +41,7 @@ class EventSenderDSLTest extends FunSuite
     implicit val sender = mock[SendAndExpectFeedback[Query, Iterable[EventPart], TestingTransport]]
 
     val q = Query("true")
-    sender expects 'send withArguments (conn, Write(q), system, timeout) once
+    sender expects 'send withArguments (conn, Write(q), timeout) once
 
     q |>< dest
   }

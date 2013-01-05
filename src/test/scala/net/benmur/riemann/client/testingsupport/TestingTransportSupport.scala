@@ -14,15 +14,16 @@ trait TestingTransportSupport {
   implicit val timeout = Timeout(10 seconds)
   val address = new InetSocketAddress(0)
 
-  class TestingTransportConnection(val where: SocketAddress = new InetSocketAddress(0)) extends Connection[TestingTransport]
+  class TestingTransportConnection(val where: SocketAddress = new InetSocketAddress(0))
 
   implicit object TestingTransportConnectionBuilder extends ConnectionBuilder[TestingTransport] {
-    implicit def buildConnection(where: SocketAddress, factory: Option[TestingTransport#SocketFactory] = None, dispatcherId: Option[String])(implicit system: ActorSystem, timeout: Timeout): Connection[TestingTransport] =
+    implicit def buildConnection(where: SocketAddress, factory: Option[TestingTransport#SocketFactory] = None, dispatcherId: Option[String])(implicit system: ActorSystem, timeout: Timeout): TestingTransport#Connection =
       new TestingTransportConnection(where)
   }
 
   trait TestingTransport extends TransportType {
     type SocketWrapper = Unit
+    type Connection = TestingTransportConnection
   }
 
   val event = EventPart(host = Some("h"), service = Some("s"), state = Some("ok"))

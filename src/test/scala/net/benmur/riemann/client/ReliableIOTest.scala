@@ -28,11 +28,11 @@ class ReliableIOTest extends FunSuite
     val ios = new ByteArrayInputStream(in)
     val oos = new ByteArrayOutputStream()
 
-    val wrapper = mock[ConnectedSocketWrapper]
+    val wrapper = mock[Reliable.SocketWrapper]
     wrapper expects 'outputStream returning oos once;
     wrapper expects 'inputStream returning ios once
 
-    val socketFactory = mockFunction[SocketAddress, ConnectedSocketWrapper]
+    val socketFactory = mockFunction[SocketAddress, Reliable.SocketWrapper]
     socketFactory expects address returning wrapper once
 
     val conn = implicitly[ConnectionBuilder[Reliable]].buildConnection(address, Some(socketFactory), Some(CallingThreadDispatcher.Id))
@@ -55,11 +55,11 @@ class ReliableIOTest extends FunSuite
 
     val oos = new ByteArrayOutputStream()
 
-    val wrapper = mock[ConnectedSocketWrapper]
+    val wrapper = mock[Reliable.SocketWrapper]
     wrapper expects 'outputStream returning oos once;
     wrapper expects 'inputStream returning new ByteArrayInputStream(outBuilder.toByteArray) once
 
-    val socketFactory = mockFunction[SocketAddress, ConnectedSocketWrapper]
+    val socketFactory = mockFunction[SocketAddress, Reliable.SocketWrapper]
     socketFactory expects address returning wrapper once
 
     val conn = implicitly[ConnectionBuilder[Reliable]].buildConnection(address, Some(socketFactory), Some(CallingThreadDispatcher.Id))
@@ -85,11 +85,11 @@ class ReliableIOTest extends FunSuite
 
     val oos = new ByteArrayOutputStream()
 
-    val wrapper = mock[ConnectedSocketWrapper]
+    val wrapper = mock[Reliable.SocketWrapper]
     wrapper expects 'outputStream returning oos once;
     wrapper expects 'inputStream returning new ByteArrayInputStream(responseBuilder.toByteArray) once
 
-    val socketFactory = mockFunction[SocketAddress, ConnectedSocketWrapper]
+    val socketFactory = mockFunction[SocketAddress, Reliable.SocketWrapper]
     socketFactory expects address returning wrapper once
 
     val conn = implicitly[ConnectionBuilder[Reliable]].buildConnection(address, Some(socketFactory), Some(CallingThreadDispatcher.Id))
@@ -111,11 +111,11 @@ class ReliableIOTest extends FunSuite
 
     val os = new ByteArrayOutputStream
 
-    val wrapper = mock[ConnectedSocketWrapper]
+    val wrapper = mock[Reliable.SocketWrapper]
     wrapper expects 'inputStream returning inputStream twice;
     wrapper expects 'outputStream returning os twice
 
-    val socketFactory = mockFunction[SocketAddress, ConnectedSocketWrapper]
+    val socketFactory = mockFunction[SocketAddress, Reliable.SocketWrapper]
     socketFactory expects address returning wrapper twice
 
     val conn = implicitly[ConnectionBuilder[Reliable]].buildConnection(address, Some(socketFactory), Some(CallingThreadDispatcher.Id))
@@ -143,8 +143,8 @@ class ReliableIOTest extends FunSuite
   }
 
   test("reconnect in case of SocketException while connecting") {
-    val wrapper = mock[ConnectedSocketWrapper]
-    val socketFactory = mockFunction[SocketAddress, ConnectedSocketWrapper]
+    val wrapper = mock[Reliable.SocketWrapper]
+    val socketFactory = mockFunction[SocketAddress, Reliable.SocketWrapper]
 
     val os = new ByteArrayOutputStream
 
