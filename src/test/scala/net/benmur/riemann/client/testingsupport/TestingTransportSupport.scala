@@ -22,7 +22,7 @@ trait TestingTransportSupport {
   }
 
   trait TestingTransport extends TransportType {
-    type SocketFactory = SocketAddress => Unit
+    type SocketWrapper = Unit
   }
 
   val event = EventPart(host = Some("h"), service = Some("s"), state = Some("ok"))

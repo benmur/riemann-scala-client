@@ -33,13 +33,16 @@ case class WriteBinary(data: Array[Byte])
 case class RemoteError(message: String) extends Throwable
 
 trait TransportType {
-  type SocketFactory
+  type SocketWrapper
+  type SocketFactory = SocketAddress => SocketWrapper
 }
+
 trait Reliable extends TransportType {
-  type SocketFactory = SocketAddress => ConnectedSocketWrapper
+  type SocketWrapper = ConnectedSocketWrapper
 }
+
 trait Unreliable extends TransportType {
-  type SocketFactory = SocketAddress => UnconnectedSocketWrapper
+  type SocketWrapper = UnconnectedSocketWrapper
 }
 
 trait Connection[T <: TransportType]

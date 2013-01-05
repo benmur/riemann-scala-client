@@ -1,7 +1,6 @@
 package net.benmur.riemann.client
 
 import java.net.{ DatagramPacket, DatagramSocket, SocketAddress }
-import java.util.concurrent.atomic.AtomicLong
 
 import scala.annotation.implicitNotFound
 import scala.collection.mutable.WrappedArray
@@ -10,14 +9,12 @@ import akka.actor.{ Actor, ActorSystem, Props }
 import akka.util.Timeout
 
 trait UnreliableIO {
-  private val nClients = new AtomicLong(0L) // FIXME this should be more global
-
   class UnreliableConnection(where: SocketAddress, factory: Unreliable#SocketFactory, dispatcherId: Option[String] = None)(implicit system: ActorSystem) extends Connection[Unreliable] {
     val props = {
       val p = Props(new UnconnectedConnectionActor(where, factory))
       if (dispatcherId.isEmpty) p else p.withDispatcher(dispatcherId.get)
     }
-    val ioActor = system.actorOf(props, "riemann-udp-client-" + nClients.incrementAndGet)
+    val ioActor = system.actorOf(props, io.IO.clientName("riemann-udp-client-"))
   }
 
   implicit object UnreliableSendOff extends SendOff[EventPart, Unreliable] with Serializers {
@@ -36,7 +33,7 @@ trait UnreliableIO {
     }
   }
 
-  val makeUdpConnection: Unreliable#SocketFactory = (addr) => {
+  val makeUdpConnection: Unreliable#SocketFactory = (addr: SocketAddress) => {
     val dest = new DatagramSocket(addr)
     new UnconnectedSocketWrapper {
       override def send(data: WrappedArray[Byte]) = dest send new DatagramPacket(data.array, data.length)

@@ -2,8 +2,6 @@ package net.benmur.riemann.client
 
 import java.io.{ DataInputStream, DataOutputStream }
 import java.net.{ Socket, SocketAddress, SocketException }
-import java.util.concurrent.atomic.AtomicLong
-import scala.annotation.implicitNotFound
 import com.aphyr.riemann.Proto
 import akka.actor.{ Actor, ActorLogging, ActorRef, ActorSystem, OneForOneStrategy, Props }
 import akka.actor.SupervisorStrategy._
@@ -15,8 +13,6 @@ import akka.util.duration.intToDurationInt
 import akka.actor.ActorInitializationException
 
 trait ReliableIO {
-  private val nClients = new AtomicLong(0L) // FIXME this should be more global
-
   private[this] class ReliableConnectionActor(where: SocketAddress, factory: Reliable#SocketFactory, dispatcherId: Option[String])(implicit system: ActorSystem) extends Actor {
     override val supervisorStrategy = OneForOneStrategy(maxNrOfRetries = 2, withinTimeRange = 1 second) { // This needs to be more reasonable
       case _ => Restart
@@ -109,7 +105,7 @@ trait ReliableIO {
         val p = Props(new ReliableConnectionActor(where, factory getOrElse makeTcpConnection, dispatcherId))
         if (dispatcherId.isEmpty) p else p.withDispatcher(dispatcherId.get)
       }
-      new ReliableConnection(system.actorOf(props, "riemann-tcp-client-" + nClients.incrementAndGet))
+      new ReliableConnection(system.actorOf(props, io.IO.clientName("riemann-tcp-client-")))
     }
   }
 }
