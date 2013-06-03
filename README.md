@@ -130,7 +130,7 @@ Remaining items include :
 
 ## Authors/Licensing
 
-- (c) 2012 Rached Ben Mustapha <rached@benmur.net>
+- (c) 2012-2013 Rached Ben Mustapha <rached@benmur.net>
 - licensed under the MIT license, please see the LICENSE file for details.
 - thanks to Kyle Kingsbury for Riemann and riemann-java-client
 
