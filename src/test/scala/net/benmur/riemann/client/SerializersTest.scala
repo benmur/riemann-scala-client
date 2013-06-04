@@ -13,7 +13,7 @@ class SerializersTest extends FunSuite with ShouldMatchers {
   test("out: convert a full EventPart to a protobuf Msg") {
     val expected = Proto.Msg.newBuilder.addEvents(protobufEvent1).build
 
-    expect(expected) {
+    expectResult(expected) {
       serializeEventPartToProtoMsg(event1)
     }
   }
@@ -22,7 +22,7 @@ class SerializersTest extends FunSuite with ShouldMatchers {
     val expected = Proto.Msg.newBuilder.addEvents(
       Proto.Event.newBuilder).build
 
-    expect(expected) {
+    expectResult(expected) {
       serializeEventPartToProtoMsg(EventPart())
     }
   }
@@ -31,7 +31,7 @@ class SerializersTest extends FunSuite with ShouldMatchers {
     val expected = Proto.Msg.newBuilder.addEvents(
       Proto.Event.newBuilder.setHost("host")).build
 
-    expect(expected) {
+    expectResult(expected) {
       serializeEventPartToProtoMsg(EventPart(host = Some("host")))
     }
   }
@@ -40,7 +40,7 @@ class SerializersTest extends FunSuite with ShouldMatchers {
     val expected = Proto.Msg.newBuilder.addEvents(
       Proto.Event.newBuilder.setService("service")).build
 
-    expect(expected) {
+    expectResult(expected) {
       serializeEventPartToProtoMsg(EventPart(service = Some("service")))
     }
   }
@@ -49,7 +49,7 @@ class SerializersTest extends FunSuite with ShouldMatchers {
     val expected = Proto.Msg.newBuilder.addEvents(
       Proto.Event.newBuilder.setState("state")).build
 
-    expect(expected) {
+    expectResult(expected) {
       serializeEventPartToProtoMsg(EventPart(state = Some("state")))
     }
   }
@@ -58,7 +58,7 @@ class SerializersTest extends FunSuite with ShouldMatchers {
     val expected = Proto.Msg.newBuilder.addEvents(
       Proto.Event.newBuilder.setTime(1234L)).build
 
-    expect(expected) {
+    expectResult(expected) {
       serializeEventPartToProtoMsg(EventPart(time = Some(1234L)))
     }
   }
@@ -67,7 +67,7 @@ class SerializersTest extends FunSuite with ShouldMatchers {
     val expected = Proto.Msg.newBuilder.addEvents(
       Proto.Event.newBuilder.setDescription("description")).build
 
-    expect(expected) {
+    expectResult(expected) {
       serializeEventPartToProtoMsg(EventPart(description = Some("description")))
     }
   }
@@ -76,7 +76,7 @@ class SerializersTest extends FunSuite with ShouldMatchers {
     val expected = Proto.Msg.newBuilder.addEvents(
       Proto.Event.newBuilder.addAllTags(List("tag1"))).build
 
-    expect(expected) {
+    expectResult(expected) {
       serializeEventPartToProtoMsg(EventPart(tags = List("tag1")))
     }
   }
@@ -85,7 +85,7 @@ class SerializersTest extends FunSuite with ShouldMatchers {
     val expected = Proto.Msg.newBuilder.addEvents(
       Proto.Event.newBuilder.setMetricSint64(1234L)).build
 
-    expect(expected) {
+    expectResult(expected) {
       serializeEventPartToProtoMsg(EventPart(metric = Some(1234L)))
     }
   }
@@ -94,7 +94,7 @@ class SerializersTest extends FunSuite with ShouldMatchers {
     val expected = Proto.Msg.newBuilder.addEvents(
       Proto.Event.newBuilder.setMetricD(1234.9)).build
 
-    expect(expected) {
+    expectResult(expected) {
       serializeEventPartToProtoMsg(EventPart(metric = Some(1234.9)))
     }
   }
@@ -103,7 +103,7 @@ class SerializersTest extends FunSuite with ShouldMatchers {
     val expected = Proto.Msg.newBuilder.addEvents(
       Proto.Event.newBuilder.setMetricF(1234.9f)).build
 
-    expect(expected) {
+    expectResult(expected) {
       serializeEventPartToProtoMsg(EventPart(metric = Some(1234.9f)))
     }
   }
@@ -112,7 +112,7 @@ class SerializersTest extends FunSuite with ShouldMatchers {
     val expected = Proto.Msg.newBuilder.addEvents(
       Proto.Event.newBuilder.setTtl(1234L)).build
 
-    expect(expected) {
+    expectResult(expected) {
       serializeEventPartToProtoMsg(EventPart(ttl = Some(1234L)))
     }
   }
@@ -120,19 +120,19 @@ class SerializersTest extends FunSuite with ShouldMatchers {
   test("out: convert an Iterable of full EventParts to a protobuf Msg") {
     val expected = Proto.Msg.newBuilder.addEvents(protobufEvent1).addEvents(protobufEvent2).build
 
-    expect(expected) {
+    expectResult(expected) {
       serializeEventPartsToProtoMsg(EventSeq(event1, event2))
     }
   }
 
   test("out: convert a Query to a protobuf Msg") {
-    expect(Proto.Msg.newBuilder.setQuery(Proto.Query.newBuilder.setString("true")).build) {
+    expectResult(Proto.Msg.newBuilder.setQuery(Proto.Query.newBuilder.setString("true")).build) {
       serializeQueryToProtoMsg(Query("true"))
     }
   }
 
   test("in: convert a protobuf Msg response with an ok status") {
-    expect(Nil) {
+    expectResult(Nil) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).build)
     }
   }
@@ -152,7 +152,7 @@ class SerializersTest extends FunSuite with ShouldMatchers {
   }
 
   test("in: convert a successful Query result from a protobuf Msg to multiple EventParts") {
-    expect(List(event1)) {
+    expectResult(List(event1)) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(protobufEvent1).build)
     }
   }
@@ -165,77 +165,77 @@ class SerializersTest extends FunSuite with ShouldMatchers {
   }
 
   test("in: convert a protobuf Msg with empty Event to a List(EventPart)") {
-    expect(List(EventPart())) {
+    expectResult(List(EventPart())) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
         Proto.Event.newBuilder).build)
     }
   }
 
   test("in: convert a protobuf Msg with Event with only host to a List(EventPart)") {
-    expect(List(EventPart(host = Some("host")))) {
+    expectResult(List(EventPart(host = Some("host")))) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
         Proto.Event.newBuilder.setHost("host")).build)
     }
   }
 
   test("in: convert a protobuf Msg with Event with only service to a List(EventPart)") {
-    expect(List(EventPart(service = Some("service")))) {
+    expectResult(List(EventPart(service = Some("service")))) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
         Proto.Event.newBuilder.setService("service")).build)
     }
   }
 
   test("in: convert a protobuf Msg with Event with only state to a List(EventPart)") {
-    expect(List(EventPart(state = Some("state")))) {
+    expectResult(List(EventPart(state = Some("state")))) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
         Proto.Event.newBuilder.setState("state")).build)
     }
   }
 
   test("in: convert a protobuf Msg with Event with only time to a List(EventPart)") {
-    expect(List(EventPart(time = Some(1234L)))) {
+    expectResult(List(EventPart(time = Some(1234L)))) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
         Proto.Event.newBuilder.setTime(1234L)).build)
     }
   }
 
   test("in: convert a protobuf Msg with Event with only description to a List(EventPart)") {
-    expect(List(EventPart(description = Some("description")))) {
+    expectResult(List(EventPart(description = Some("description")))) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
         Proto.Event.newBuilder.setDescription("description")).build)
     }
   }
 
   test("in: convert a protobuf Msg with Event with only tags to a List(EventPart)") {
-    expect(List(EventPart(tags = List("tag1", "tag2")))) {
+    expectResult(List(EventPart(tags = List("tag1", "tag2")))) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
         Proto.Event.newBuilder.addAllTags(List("tag1", "tag2"))).build)
     }
   }
 
   test("in: convert a protobuf Msg with Event with only metric (long) to a List(EventPart)") {
-    expect(List(EventPart(metric = Some(1234L)))) {
+    expectResult(List(EventPart(metric = Some(1234L)))) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
         Proto.Event.newBuilder.setMetricSint64(1234L)).build)
     }
   }
 
   test("in: convert a protobuf Msg with Event with only metric (float) to a List(EventPart)") {
-    expect(List(EventPart(metric = Some(1234.0f)))) {
+    expectResult(List(EventPart(metric = Some(1234.0f)))) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
         Proto.Event.newBuilder.setMetricF(1234.0f)).build)
     }
   }
 
   test("in: convert a protobuf Msg with Event with only metric (double) to a List(EventPart)") {
-    expect(List(EventPart(metric = Some(1234.1: Double)))) {
+    expectResult(List(EventPart(metric = Some(1234.1: Double)))) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
         Proto.Event.newBuilder.setMetricD(1234.1: Double)).build)
     }
   }
 
   test("in: convert a protobuf Msg with Event with only ttl to a List(EventPart)") {
-    expect(List(EventPart(ttl = Some(1234L)))) {
+    expectResult(List(EventPart(ttl = Some(1234L)))) {
       unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
         Proto.Event.newBuilder.setTtl(1234L)).build)
     }

@@ -7,19 +7,21 @@ Scala client library for sending events to [Riemann](http://riemann.io/), featur
 ## Usage
 
 ### Build System
-In build.sbt (scala 2.9.2 only at the moment, port to 2.10 is expected shortly):
+In build.sbt (scala 2.9.3 only at the moment, port to 2.10 is expected shortly):
 ```
-libraryDependencies += "net.benmur" %% "riemann-scala-client" % "0.2"
+libraryDependencies += "net.benmur" %% "riemann-scala-client" % "0.2.1"
 ```
 
 Or in pom.xml if you are using maven:
 ```xml
 <dependency>
   <groupId>net.benmur</groupId>
-  <artifactId>riemann-scala-client_2.9.2</artifactId>
-  <version>0.2</version>
+  <artifactId>riemann-scala-client_2.9.3</artifactId>
+  <version>0.2.1</version>
 </dependency>
 ```
+
+Scala 2.9.2 binaries are still available with the 0.2 version.
 
 ### Minimum viable use case
 ```scala
