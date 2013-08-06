@@ -140,10 +140,7 @@ Care has been taken to be as reliable as possible, because sending metrics shoul
 - Exceptions are ignored silently (only logged to the akka event bus)
 - Failed connections are retried at most twice per second
 
-Remaining items include :
-- Hybrid tcp/udp connection mode
-- Retrying failed Writes after reconnecting (with a counter)
-- Shutdown/closing
+Please see next milestone's [open issues list](https://github.com/benmur/riemann-scala-client/issues?milestone=1&state=open) for items pending implementation.
 
 ## Authors/Licensing
 
