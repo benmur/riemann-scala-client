@@ -1,6 +1,5 @@
 package net.benmur.riemann.client
 
-import org.scalamock.ProxyMockFactory
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
@@ -9,9 +8,7 @@ import RiemannClient.riemannConnectAs
 
 class RiemannClientWithDestinationAPITest extends FunSuite
     with testingsupport.ImplicitActorSystem
-    with ShouldMatchers
-    with MockFactory
-    with ProxyMockFactory {
+    with MockFactory {
   import testingsupport.TestingTransportSupport._
 
   test("entry point to create a connection (pristine state)") {
@@ -24,7 +21,7 @@ class RiemannClientWithDestinationAPITest extends FunSuite
   test("entry point to create a connection (sending an event)") {
     val dest = riemannConnectAs[TestingTransport] to address
     implicit val sender = mock[SendOff[EventPart, TestingTransport]]
-    sender expects 'sendOff withArguments (dest.connection, Write(event)) once
+    (sender.sendOff _).expects(dest.connection, Write(event)).once()
 
     dest send event
   }
@@ -32,7 +29,7 @@ class RiemannClientWithDestinationAPITest extends FunSuite
   test("entry point to create a connection (sending multiple events)") {
     val dest = riemannConnectAs[TestingTransport] to address
     implicit val sender = mock[SendOff[EventSeq, TestingTransport]]
-    sender expects 'sendOff withArguments (dest.connection, Write(EventSeq(event, event2))) once
+    (sender.sendOff _).expects(dest.connection, Write(EventSeq(event, event2))).once()
 
     dest send EventSeq(event, event2)
   }
@@ -40,7 +37,7 @@ class RiemannClientWithDestinationAPITest extends FunSuite
   test("entry point to create a connection (sending an event expecting feedback)") {
     val dest = riemannConnectAs[TestingTransport] to address
     implicit val sender = mock[SendAndExpectFeedback[EventPart, Boolean, TestingTransport]]
-    sender expects 'send withArguments (dest.connection, Write(event), timeout) once
+    (sender.send _).expects(dest.connection, Write(event)).once()
 
     dest ask event
   }
@@ -48,7 +45,7 @@ class RiemannClientWithDestinationAPITest extends FunSuite
   test("entry point to create a connection (sending multiple events expecting feedback)") {
     val dest = riemannConnectAs[TestingTransport] to address
     implicit val sender = mock[SendAndExpectFeedback[EventSeq, Boolean, TestingTransport]]
-    sender expects 'send withArguments (dest.connection, Write(EventSeq(event, event2)), timeout) once
+    (sender.send _).expects(dest.connection, Write(EventSeq(event, event2))).once()
 
     dest ask EventSeq(event, event2)
   }
@@ -56,7 +53,7 @@ class RiemannClientWithDestinationAPITest extends FunSuite
   test("entry point to create a connection (sending an query)") {
     val dest = riemannConnectAs[TestingTransport] to address
     implicit val sender = mock[SendAndExpectFeedback[Query, Iterable[EventPart], TestingTransport]]
-    sender expects 'send withArguments (dest.connection, Write(Query("true")), timeout) once
+    (sender.send _).expects(dest.connection, Write(Query("true"))).once()
 
     dest ask Query("true")
   }
@@ -65,7 +62,7 @@ class RiemannClientWithDestinationAPITest extends FunSuite
     val dest = riemannConnectAs[TestingTransport] to address withValues (EventPart(host = Some("h"), service = Some("s")))
     implicit val sender = mock[SendOff[EventPart, TestingTransport]]
     val ev = EventPart(host = Some("h"), service = Some("s"), state = Some("ok"))
-    sender expects 'sendOff withArguments (dest.connection, Write(ev)) once
+    (sender.sendOff _).expects(dest.connection, Write(ev)).once()
 
     dest send EventPart(state = Some("ok"))
   }

@@ -1,18 +1,23 @@
 package net.benmur.riemann.client
-import org.scalamock.ProxyMockFactory
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.FunSuite
 import net.benmur.riemann.client.testingsupport.TestingTransportSupport
+import org.scalamock.CallHandler2
+import net.benmur.riemann.client.ReliableIO._
+import net.benmur.riemann.client.Write
+import net.benmur.riemann.client.EventPart
+import net.benmur.riemann.client.Query
+
 
 class EventSenderDSLTest extends FunSuite
-    with testingsupport.ImplicitActorSystem
     with MockFactory
-    with ProxyMockFactory {
+    with testingsupport.ImplicitActorSystem      {
 
   object DestinationOps extends DestinationOps
   import DestinationOps.RiemannDestination
   import TestingTransportSupport._
   import EventSenderDSL._
+
 
   def makeDestination = {
     val conn = new TestingTransportConnection
@@ -23,7 +28,7 @@ class EventSenderDSLTest extends FunSuite
   test("DSL operator to send an event without expecting a result") {
     val (conn, dest) = makeDestination
     implicit val sender = mock[SendOff[EventPart, TestingTransport]]
-    sender expects 'sendOff withArguments (conn, Write(event)) once
+    (sender.sendOff _).expects(conn, Write(event)).once()
 
     event |>> dest
   }
@@ -31,7 +36,7 @@ class EventSenderDSLTest extends FunSuite
   test("DSL operator to send operator to send an event expecting a status") {
     val (conn, dest) = makeDestination
     implicit val sender = mock[SendAndExpectFeedback[EventPart, Boolean, TestingTransport]]
-    sender expects 'send withArguments (conn, Write(event), timeout) once
+    (sender.send _).expects(conn, Write(event)).once()
 
     event |>< dest
   }
@@ -41,8 +46,7 @@ class EventSenderDSLTest extends FunSuite
     implicit val sender = mock[SendAndExpectFeedback[Query, Iterable[EventPart], TestingTransport]]
 
     val q = Query("true")
-    sender expects 'send withArguments (conn, Write(q), timeout) once
-
+    (sender.send _).expects(conn, Write(q)).once()
     q |>< dest
   }
 }

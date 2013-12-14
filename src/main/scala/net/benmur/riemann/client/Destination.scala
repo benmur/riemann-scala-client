@@ -3,16 +3,18 @@ package net.benmur.riemann.client
 import java.net.SocketAddress
 
 import akka.actor.ActorSystem
-import akka.dispatch.Future
 import akka.util.Timeout
+import scala.concurrent.{ExecutionContext, Future}
 
 trait DestinationOps {
   class DestinationBuilder[T <: TransportType](connectionBuilder: ConnectionBuilder[T])(implicit system: ActorSystem, timeout: Timeout) {
-    def to(where: SocketAddress): RiemannDestination[T] =
+    def to(where: SocketAddress): RiemannDestination[T] = {
+      implicit val context = system.dispatcher
       new RiemannDestination[T](EventPart(), connectionBuilder.buildConnection(where))
+    }
   }
 
-  class RiemannDestination[T <: TransportType](baseEvent: EventPart, val connection: T#Connection)(implicit timeout: Timeout)
+  class RiemannDestination[T <: TransportType](baseEvent: EventPart, val connection: T#Connection)(implicit timeout: Timeout, context: ExecutionContext)
       extends Destination[T] {
 
     def send(event: EventPart)(implicit messenger: SendOff[EventPart, T]): Unit =

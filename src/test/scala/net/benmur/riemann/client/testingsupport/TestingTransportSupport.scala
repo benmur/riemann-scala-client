@@ -3,10 +3,9 @@ package net.benmur.riemann.client.testingsupport
 import java.net.{ InetSocketAddress, SocketAddress }
 import com.aphyr.riemann.Proto
 import akka.actor.ActorSystem
-import akka.dispatch.{ Future, Promise }
 import akka.util.Timeout
-import akka.util.duration.intToDurationInt
 import net.benmur.riemann.client._
+import scala.concurrent.duration._
 
 trait TestingTransportSupport {
   import RiemannClient._

@@ -1,7 +1,7 @@
 package net.benmur.riemann.client
 
 import scala.collection.JavaConversions.asJavaIterable
-import org.scalatest.FunSuite
+import org.scalatest.{ FunSuite}
 import com.aphyr.riemann.Proto
 import org.scalatest.matchers.ShouldMatchers
 

@@ -4,26 +4,22 @@ import java.net.SocketAddress
 
 import scala.collection.mutable.WrappedArray
 
-import org.scalamock.ProxyMockFactory
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
 
 import akka.actor.ActorSystem
 import akka.testkit.CallingThreadDispatcher
 
 class UnreliableIOTest extends FunSuite
     with testingsupport.ImplicitActorSystem
-    with MockFactory
-    with ProxyMockFactory
-    with ShouldMatchers {
+    with MockFactory {
 
   import UnreliableIO._
   import testingsupport.TestingTransportSupport._
 
   test("send a protobuf Msg") {
     val socket = mock[Unreliable.SocketWrapper]
-    socket expects 'send withArguments (WrappedArray.make(protoMsgEvent.toByteArray)) once
+    (socket.send _).expects(WrappedArray.make(protoMsgEvent.toByteArray)).once()
 
     val socketFactory = mockFunction[SocketAddress, Unreliable.SocketWrapper]
     socketFactory expects address returning socket once

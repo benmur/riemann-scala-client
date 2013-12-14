@@ -2,9 +2,9 @@ name := "riemann-scala-client"
 
 organization := "net.benmur"
 
-version := "0.2.1"
+version := "0.2.2"
 
-scalaVersion := "2.9.3"
+scalaVersion := "2.10.2"
 
 scalacOptions += "-deprecation"
 
@@ -14,13 +14,13 @@ resolvers += "Akka" at "http://repo.akka.io/releases"
 
 libraryDependencies += "com.aphyr" % "riemann-java-client" % "0.2.4"
 
-libraryDependencies += "com.typesafe.akka" % "akka-actor" % "2.0.5"
+libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.2.3"
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "1.9.1" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "2.0.M5b" % "test"
 
-libraryDependencies += "org.scalamock" % "scalamock-scalatest-support_2.9.2" % "latest.integration" % "test"
+libraryDependencies += "org.scalamock" %% "scalamock-scalatest-support" % "3.0.1" % "test"
 
-libraryDependencies += "com.typesafe.akka" % "akka-testkit" % "2.0.5" % "test"
+libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % "2.2.3" % "test"
 
 publishMavenStyle := true
 

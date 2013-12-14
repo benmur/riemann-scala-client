@@ -6,11 +6,11 @@ import com.aphyr.riemann.Proto
 import akka.actor.{ Actor, ActorLogging, ActorRef, ActorSystem, OneForOneStrategy, Props }
 import akka.actor.SupervisorStrategy._
 import akka.actor.actorRef2Scala
-import akka.dispatch.{ Future, Promise }
 import akka.pattern.ask
 import akka.util.Timeout
-import akka.util.duration.intToDurationInt
+import scala.concurrent.duration._
 import akka.actor.ActorInitializationException
+import scala.concurrent.{ExecutionContext, Future}
 
 trait ReliableIO {
   private type ImplementedTransport = Reliable.type
@@ -34,23 +34,23 @@ trait ReliableIO {
   }
 
   implicit object ReliableEventPartSendAndExpectFeedback extends SendAndExpectFeedback[EventPart, Boolean, ImplementedTransport] with Serializers {
-    def send(connection: ImplementedTransport#Connection, command: Write[EventPart])(implicit timeout: Timeout): Future[Boolean] = {
+    def send(connection: ImplementedTransport#Connection, command: Write[EventPart])(implicit timeout: Timeout, context: ExecutionContext): Future[Boolean] = {
       val data = serializeEventPartToProtoMsg(command.m).toByteArray
       (connection.ioActor ask WriteBinary(data)).mapTo[Proto.Msg] map (_.getOk)
     }
   }
 
   implicit object ReliableQuerySendAndExpectFeedback extends SendAndExpectFeedback[Query, Iterable[EventPart], ImplementedTransport] with Serializers {
-    def send(connection: ImplementedTransport#Connection, command: Write[Query])(implicit timeout: Timeout): Future[Iterable[EventPart]] = {
+    def send(connection: ImplementedTransport#Connection, command: Write[Query])(implicit timeout: Timeout, context: ExecutionContext): Future[Iterable[EventPart]] = {
       val data = serializeQueryToProtoMsg(command.m).toByteArray
-      (connection.ioActor ask WriteBinary(data)).mapTo[Proto.Msg] map (unserializeProtoMsg(_))
+      (connection.ioActor ask WriteBinary(data)).mapTo[Proto.Msg] map unserializeProtoMsg
     }
   }
 
   implicit object ReliableSendOff extends SendOff[EventPart, ImplementedTransport] with Serializers {
     def sendOff(connection: ImplementedTransport#Connection, command: Write[EventPart]): Unit = connection match {
       case rc: ReliableConnection =>
-        rc.ioActor tell WriteBinary(serializeEventPartToProtoMsg(command.m).toByteArray)
+        rc.ioActor ! WriteBinary(serializeEventPartToProtoMsg(command.m).toByteArray)
       case c =>
         System.err.println(
           "don't know how to send data to " + c.getClass.getName)
@@ -72,7 +72,8 @@ trait ReliableIO {
           inputStream.readFully(buf)
           sender ! Proto.Msg.parseFrom(buf)
         } catch {
-          case e: SocketException => throw e
+          case e: SocketException =>
+            throw e
           case exception =>
             log.error(exception, "could not send or receive data")
             val message = Option(exception.getMessage) getOrElse "(no message)"

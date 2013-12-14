@@ -5,9 +5,9 @@ import java.net.SocketAddress
 import scala.annotation.implicitNotFound
 import scala.collection.mutable.WrappedArray
 import akka.actor.ActorSystem
-import akka.dispatch.Future
 import akka.util.Timeout
 import akka.actor.ActorRef
+import scala.concurrent.{ExecutionContext, Future}
 
 sealed trait RiemannSendable
 
@@ -85,5 +85,5 @@ trait SendOff[S <: RiemannSendable, T <: TransportType] {
 
 @implicitNotFound(msg = "Connection type ${T} does not allow getting feedback from Riemann after sending ${S} because there is no implicit in scope returning a implementation of SendAndExpectFeedback[${S}, ${T}].")
 trait SendAndExpectFeedback[S <: RiemannSendable, R, T <: TransportType] {
-  def send(connection: T#Connection, command: Write[S])(implicit timeout: Timeout): Future[R]
+  def send(connection: T#Connection, command: Write[S])(implicit timeout: Timeout, context: ExecutionContext): Future[R]
 }

@@ -8,8 +8,9 @@ import com.typesafe.config.ConfigFactory
 trait ImplicitActorSystem extends BeforeAndAfterAll {
   self: Suite =>
 
-  implicit val system = ActorSystem("test", config = ConfigFactory.parseString(
-    """akka.event-handlers = [ "net.benmur.riemann.client.testingsupport.NopEventHandler" ]"""))
+  implicit val system = ActorSystem("test")
+
+  implicit val context = system.dispatcher
 
   override def afterAll {
     super.afterAll

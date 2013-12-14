@@ -23,7 +23,7 @@ trait UnreliableIO {
   implicit object UnreliableSendOff extends SendOff[EventPart, ImplementedTransport] with Serializers {
     def sendOff(connection: ImplementedTransport#Connection, command: Write[EventPart]): Unit = {
       val data = serializeEventPartToProtoMsg(command.m).toByteArray
-      connection.ioActor tell WriteBinary(data)
+      connection.ioActor ! WriteBinary(data)
     }
   }
 
