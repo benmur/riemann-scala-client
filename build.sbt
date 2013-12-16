@@ -6,7 +6,7 @@ version := "0.2.2"
 
 scalaVersion := "2.10.2"
 
-scalacOptions += "-deprecation"
+scalacOptions ++= List("-deprecation", "-feature")
 
 resolvers += "Clojars" at "http://clojars.org/repo"
 
