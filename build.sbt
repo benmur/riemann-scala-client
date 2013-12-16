@@ -2,21 +2,21 @@ name := "riemann-scala-client"
 
 organization := "net.benmur"
 
-version := "0.2.2"
+version := "0.3.0-SNAPSHOT"
 
-scalaVersion := "2.10.2"
+scalaVersion := "2.10.3"
 
-scalacOptions ++= List("-deprecation", "-feature")
+scalacOptions ++= List("-deprecation", "-feature", "-unchecked")
 
 resolvers += "Clojars" at "http://clojars.org/repo"
 
 resolvers += "Akka" at "http://repo.akka.io/releases"
 
-libraryDependencies += "com.aphyr" % "riemann-java-client" % "0.2.4"
+libraryDependencies += "com.aphyr" % "riemann-java-client" % "0.2.8"
 
 libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.2.3"
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "2.0.M5b" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "2.0" % "test"
 
 libraryDependencies += "org.scalamock" %% "scalamock-scalatest-support" % "3.0.1" % "test"
 
