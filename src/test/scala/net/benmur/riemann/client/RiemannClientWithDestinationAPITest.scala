@@ -7,6 +7,7 @@ import org.scalatest.matchers.ShouldMatchers
 import RiemannClient.riemannConnectAs
 
 class RiemannClientWithDestinationAPITest extends FunSuite
+    with ShouldMatchers
     with testingsupport.ImplicitActorSystem
     with MockFactory {
   import testingsupport.TestingTransportSupport._
