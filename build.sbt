@@ -12,7 +12,7 @@ resolvers += "Clojars" at "http://clojars.org/repo"
 
 resolvers += "Akka" at "http://repo.akka.io/releases"
 
-libraryDependencies += "com.aphyr" % "riemann-java-client" % "0.2.8"
+libraryDependencies += "com.aphyr" % "riemann-java-client" % "0.2.0"
 
 libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.2.3"
 
