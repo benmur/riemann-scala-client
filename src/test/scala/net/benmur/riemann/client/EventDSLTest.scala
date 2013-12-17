@@ -3,7 +3,6 @@ package net.benmur.riemann.client
 import org.scalatest.FunSuite
 
 import EventDSL.description
-import EventDSL.eventPartToEventPartCombinator
 import EventDSL.host
 import EventDSL.metric
 import EventDSL.oneEvent

@@ -17,7 +17,7 @@ trait Serializers {
     .build
 
   def unserializeProtoMsg(m: Proto.Msg): Iterable[EventPart] = m.hasOk match {
-    case true if m.getOk => m.getEventsList map convertProtoEventToEventPart toList
+    case true if m.getOk => (m.getEventsList map convertProtoEventToEventPart).toList
     case true => throw RemoteError(m.getError)
     case false => throw RemoteError("Response has no status")
   }

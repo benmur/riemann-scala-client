@@ -5,9 +5,6 @@ import scala.annotation.implicitNotFound
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.FunSuite
 
-import EventSenderDSL.event2EventSender
-import EventSenderDSL.event2EventSenderOff
-import EventSenderDSL.query2QuerySender
 import net.benmur.riemann.client.testingsupport.TestingTransportSupport.TestingTransport
 import net.benmur.riemann.client.testingsupport.TestingTransportSupport.TestingTransportConnection
 import net.benmur.riemann.client.testingsupport.TestingTransportSupport.event

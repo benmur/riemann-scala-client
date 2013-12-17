@@ -23,14 +23,13 @@ import akka.actor.SupervisorStrategy.Restart
 import akka.actor.actorRef2Scala
 import akka.pattern.ask
 import akka.util.Timeout
-import net.benmur.riemann.client.Reliable
 
 trait ReliableIO {
   private type ImplementedTransport = Reliable.type
   type Reliable = ImplementedTransport
 
   private[this] class ReliableConnectionActor(where: SocketAddress, factory: ImplementedTransport#SocketFactory, dispatcherId: Option[String])(implicit system: ActorSystem) extends Actor {
-    override val supervisorStrategy = OneForOneStrategy(maxNrOfRetries = 2, withinTimeRange = 1 second) { // Maybe this needs to be configurable
+    override val supervisorStrategy = OneForOneStrategy(maxNrOfRetries = 2, withinTimeRange = 1.second) { // Maybe this needs to be configurable
       case _ => Restart
     }
 
@@ -91,7 +90,7 @@ trait ReliableIO {
         } catch {
           case e: SocketException =>
             throw e
-          case exception =>
+          case exception: Throwable =>
             log.error(exception, "could not send or receive data")
             val message = Option(exception.getMessage) getOrElse "(no message)"
             sender ! Proto.Msg.newBuilder.setError(message).setOk(false).build

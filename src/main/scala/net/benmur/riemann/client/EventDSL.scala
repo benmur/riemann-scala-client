@@ -11,11 +11,9 @@ trait EventDSL {
     overlay.metric orElse e.metric,
     overlay.ttl orElse e.ttl)
 
-  class EventPartCombinator(e: EventPart) {
+  implicit class EventPartCombinator(e: EventPart) {
     def |(overlay: EventPart) = mergeEvents(e, overlay)
   }
-
-  implicit def eventPartToEventPartCombinator(e: EventPart) = new EventPartCombinator(e)
 
   def oneEvent() = EventPart()
   def host(s: String) = EventPart(host = Some(s))

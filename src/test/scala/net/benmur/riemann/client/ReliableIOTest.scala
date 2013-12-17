@@ -94,7 +94,7 @@ class ReliableIOTest extends FunSuite
     new DataInputStream(new ByteArrayInputStream(out)).readInt should be === outRef.length
     out.slice(4, out.length) should be === outRef
 
-    val resp = Await.result(respFuture, 1 second)
+    val resp = Await.result(respFuture, 1.second)
     resp should be === true
   }
 
@@ -127,7 +127,7 @@ class ReliableIOTest extends FunSuite
     new DataInputStream(new ByteArrayInputStream(out)).readInt should be === queryData.length
     out.slice(4, out.length) should be === queryData
 
-    val resp = Await.result(respFuture, 1 second)
+    val resp = Await.result(respFuture, 1.second)
     resp should be === Seq(event, event2)
   }
 
