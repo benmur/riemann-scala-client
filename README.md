@@ -7,21 +7,19 @@ Scala client library for sending events to [Riemann](http://riemann.io/), featur
 ## Usage
 
 ### Build System
-In build.sbt (scala 2.9.3 only at the moment, port to 2.10 is expected shortly):
+In build.sbt (scala 2.10.3, scala 2.9.3 is available on the v0.2-scala29 branch):
 ```
-libraryDependencies += "net.benmur" %% "riemann-scala-client" % "0.2.1"
+libraryDependencies += "net.benmur" %% "riemann-scala-client" % "0.3.0"
 ```
 
 Or in pom.xml if you are using maven:
 ```xml
 <dependency>
   <groupId>net.benmur</groupId>
-  <artifactId>riemann-scala-client_2.9.3</artifactId>
-  <version>0.2.1</version>
+  <artifactId>riemann-scala-client_2.10.3</artifactId>
+  <version>0.3.0</version>
 </dependency>
 ```
-
-Scala 2.9.2 binaries are still available with the 0.2 version.
 
 ### Minimum viable use case
 ```scala
@@ -124,14 +122,14 @@ Please note that operations returning a Future won't compile if the connection i
 
 ## Dependencies
 
-- [Akka](http://akka.io/) 2.0.4
+- [Akka](http://akka.io/) 2.2.3
 - [riemann-java-client](https://github.com/aphyr/riemann-java-client) for the Protocol Buffers implementation only
 
 ## Status
 
 Pull requests are very welcome.
 
-This version is intended to work with Scala 2.9 and Akka 2.0. Support will be added for Scala 2.10 and Akka 2.1 when Scala 2.10 final is released.
+This version is intended to work with Scala 2.10 and Akka 2.2.
 
 Care has been taken to be as reliable as possible, because sending metrics should not impact your application's stability. In particular:
 - Unit test coverage is fairly good. No metrics are available yet, but the only code not tested is the actual socket code (which amounts to a total of 5 lines), for which the different conditions are mocked.
@@ -147,4 +145,4 @@ Please see next milestone's [open issues list](https://github.com/benmur/riemann
 - (c) 2012-2013 Rached Ben Mustapha <rached@benmur.net>
 - licensed under the MIT license, please see the LICENSE file for details.
 - thanks to Kyle Kingsbury for Riemann and riemann-java-client
-
+- thanks to Pavel Minchenkov who started the scala 2.10 port
