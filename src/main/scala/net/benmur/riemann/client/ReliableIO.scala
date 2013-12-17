@@ -1,16 +1,29 @@
 package net.benmur.riemann.client
 
-import java.io.{ DataInputStream, DataOutputStream }
-import java.net.{ Socket, SocketAddress, SocketException }
+import java.io.DataInputStream
+import java.io.DataOutputStream
+import java.net.Socket
+import java.net.SocketAddress
+import java.net.SocketException
+
+import scala.annotation.implicitNotFound
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.concurrent.duration.DurationInt
+
 import com.aphyr.riemann.Proto
-import akka.actor.{ Actor, ActorLogging, ActorRef, ActorSystem, OneForOneStrategy, Props }
-import akka.actor.SupervisorStrategy._
+
+import akka.actor.Actor
+import akka.actor.ActorLogging
+import akka.actor.ActorRef
+import akka.actor.ActorSystem
+import akka.actor.OneForOneStrategy
+import akka.actor.Props
+import akka.actor.SupervisorStrategy.Restart
 import akka.actor.actorRef2Scala
 import akka.pattern.ask
 import akka.util.Timeout
-import scala.concurrent.duration._
-import akka.actor.ActorInitializationException
-import scala.concurrent.{ExecutionContext, Future}
+import net.benmur.riemann.client.Reliable
 
 trait ReliableIO {
   private type ImplementedTransport = Reliable.type
@@ -34,15 +47,19 @@ trait ReliableIO {
   }
 
   implicit object ReliableEventPartSendAndExpectFeedback extends SendAndExpectFeedback[EventPart, Boolean, ImplementedTransport] with Serializers {
-    def send(connection: ImplementedTransport#Connection, command: Write[EventPart])(implicit timeout: Timeout, context: ExecutionContext): Future[Boolean] = {
+    def send(connection: ImplementedTransport#Connection, command: Write[EventPart], timeout: Timeout, context: ExecutionContext): Future[Boolean] = {
       val data = serializeEventPartToProtoMsg(command.m).toByteArray
+      implicit val to = timeout
+      implicit val ec = context
       (connection.ioActor ask WriteBinary(data)).mapTo[Proto.Msg] map (_.getOk)
     }
   }
 
   implicit object ReliableQuerySendAndExpectFeedback extends SendAndExpectFeedback[Query, Iterable[EventPart], ImplementedTransport] with Serializers {
-    def send(connection: ImplementedTransport#Connection, command: Write[Query])(implicit timeout: Timeout, context: ExecutionContext): Future[Iterable[EventPart]] = {
+    def send(connection: ImplementedTransport#Connection, command: Write[Query], timeout: Timeout, context: ExecutionContext): Future[Iterable[EventPart]] = {
       val data = serializeQueryToProtoMsg(command.m).toByteArray
+      implicit val to = timeout
+      implicit val ec = context
       (connection.ioActor ask WriteBinary(data)).mapTo[Proto.Msg] map unserializeProtoMsg
     }
   }

@@ -1,23 +1,25 @@
 package net.benmur.riemann.client
+
+import scala.annotation.implicitNotFound
+
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.FunSuite
-import net.benmur.riemann.client.testingsupport.TestingTransportSupport
-import org.scalamock.CallHandler2
-import net.benmur.riemann.client.ReliableIO._
-import net.benmur.riemann.client.Write
-import net.benmur.riemann.client.EventPart
-import net.benmur.riemann.client.Query
 
+import EventSenderDSL.event2EventSender
+import EventSenderDSL.event2EventSenderOff
+import EventSenderDSL.query2QuerySender
+import net.benmur.riemann.client.testingsupport.TestingTransportSupport.TestingTransport
+import net.benmur.riemann.client.testingsupport.TestingTransportSupport.TestingTransportConnection
+import net.benmur.riemann.client.testingsupport.TestingTransportSupport.event
+import net.benmur.riemann.client.testingsupport.TestingTransportSupport.timeout
 
 class EventSenderDSLTest extends FunSuite
-    with MockFactory
-    with testingsupport.ImplicitActorSystem      {
+  with MockFactory
+  with testingsupport.ImplicitActorSystem {
 
   object DestinationOps extends DestinationOps
   import DestinationOps.RiemannDestination
-  import TestingTransportSupport._
   import EventSenderDSL._
-
 
   def makeDestination = {
     val conn = new TestingTransportConnection
@@ -36,7 +38,7 @@ class EventSenderDSLTest extends FunSuite
   test("DSL operator to send operator to send an event expecting a status") {
     val (conn, dest) = makeDestination
     implicit val sender = mock[SendAndExpectFeedback[EventPart, Boolean, TestingTransport]]
-    (sender.send _).expects(conn, Write(event)).once()
+    (sender.send _).expects(conn, Write(event), timeout, ec).once()
 
     event |>< dest
   }
@@ -46,7 +48,7 @@ class EventSenderDSLTest extends FunSuite
     implicit val sender = mock[SendAndExpectFeedback[Query, Iterable[EventPart], TestingTransport]]
 
     val q = Query("true")
-    (sender.send _).expects(conn, Write(q)).once()
+    (sender.send _).expects(conn, Write(q), timeout, ec).once()
     q |>< dest
   }
 }

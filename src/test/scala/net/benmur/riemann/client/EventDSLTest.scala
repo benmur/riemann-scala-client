@@ -2,6 +2,16 @@ package net.benmur.riemann.client
 
 import org.scalatest.FunSuite
 
+import EventDSL.description
+import EventDSL.eventPartToEventPartCombinator
+import EventDSL.host
+import EventDSL.metric
+import EventDSL.oneEvent
+import EventDSL.service
+import EventDSL.state
+import EventDSL.time
+import EventDSL.ttl
+
 class EventDSLTest extends FunSuite {
   import EventDSL._
 

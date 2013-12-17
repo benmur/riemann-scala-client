@@ -1,6 +1,7 @@
 package net.benmur.riemann.client
 
-import scala.collection.JavaConversions.{ asJavaIterable, iterableAsScalaIterable }
+import scala.collection.JavaConversions.asJavaIterable
+import scala.collection.JavaConversions.iterableAsScalaIterable
 
 import com.aphyr.riemann.Proto
 
@@ -17,8 +18,8 @@ trait Serializers {
 
   def unserializeProtoMsg(m: Proto.Msg): Iterable[EventPart] = m.hasOk match {
     case true if m.getOk => m.getEventsList map convertProtoEventToEventPart toList
-    case true            => throw RemoteError(m.getError)
-    case false           => throw RemoteError("Response has no status")
+    case true => throw RemoteError(m.getError)
+    case false => throw RemoteError("Response has no status")
   }
 
   private def convertOneEventPart(e: EventPart) = {
@@ -30,10 +31,10 @@ trait Serializers {
     e.description foreach (b.setDescription(_))
     e.tags foreach (b.addTags(_))
     e.metric foreach (_ match {
-      case value: Long   => b.setMetricSint64(value)
+      case value: Long => b.setMetricSint64(value)
       case value: Double => b.setMetricD(value)
-      case value: Float  => b.setMetricF(value)
-      case v             => System.err.println("Warning: don't know what to do with value " + v)
+      case value: Float => b.setMetricF(value)
+      case v => System.err.println("Warning: don't know what to do with value " + v)
     })
     e.ttl foreach (b.setTtl(_))
     b.build

@@ -1,22 +1,43 @@
 package net.benmur.riemann.client
 
-import java.io.{ ByteArrayInputStream, ByteArrayOutputStream, DataInputStream, DataOutputStream }
-import java.net.SocketAddress
-import org.scalamock.scalatest.MockFactory
-import org.scalatest.{ FunSuite}
-import org.scalatest.matchers.ShouldMatchers
-import com.aphyr.riemann.Proto
-import akka.actor.ActorSystem
-import akka.testkit.CallingThreadDispatcher
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.DataInputStream
+import java.io.DataOutputStream
 import java.io.InputStream
+import java.net.SocketAddress
 import java.net.SocketException
-import scala.concurrent.duration._
+
+import scala.annotation.implicitNotFound
+import scala.collection.mutable.WrappedArray
 import scala.concurrent.Await
+import scala.concurrent.duration.DurationInt
+
+import org.scalamock.scalatest.MockFactory
+import org.scalatest.FunSuite
+import org.scalatest.matchers.ShouldMatchers
+
+import com.aphyr.riemann.Proto
+
+import ReliableIO.Reliable
+import ReliableIO.ReliableEventPartSendAndExpectFeedback
+import ReliableIO.ReliableQuerySendAndExpectFeedback
+import ReliableIO.ReliableSendOff
+import ReliableIO.TwoWayConnectionBuilder
+import akka.testkit.CallingThreadDispatcher
+import testingsupport.TestingTransportSupport.address
+import testingsupport.TestingTransportSupport.event
+import testingsupport.TestingTransportSupport.event2
+import testingsupport.TestingTransportSupport.protoEvent
+import testingsupport.TestingTransportSupport.protoEvent2
+import testingsupport.TestingTransportSupport.protoMsgEvent
+import testingsupport.TestingTransportSupport.protoMsgQuery
+import testingsupport.TestingTransportSupport.timeout
 
 class ReliableIOTest extends FunSuite
-    with testingsupport.ImplicitActorSystem
-    with MockFactory
-    with ShouldMatchers {
+  with testingsupport.ImplicitActorSystem
+  with MockFactory
+  with ShouldMatchers {
 
   import ReliableIO._
   import testingsupport.TestingTransportSupport._
@@ -31,10 +52,12 @@ class ReliableIOTest extends FunSuite
     (wrapper.inputStream _).expects().returning(ios).once()
 
     val socketFactory = mockFunction[SocketAddress, Reliable.SocketWrapper]
-    socketFactory expects address returning wrapper once
+    socketFactory.expects(address).returning(wrapper).once()
 
     val conn = implicitly[ConnectionBuilder[Reliable]].buildConnection(address, Some(socketFactory), Some(CallingThreadDispatcher.Id))
     implicitly[SendOff[EventPart, Reliable]].sendOff(conn, Write(event))
+    system.shutdown
+    system.awaitTermination
 
     val out = oos.toByteArray
     val outRef = protoMsgEvent.toByteArray
@@ -58,10 +81,13 @@ class ReliableIOTest extends FunSuite
     (wrapper.inputStream _).expects().returning(new ByteArrayInputStream(outBuilder.toByteArray)).once()
 
     val socketFactory = mockFunction[SocketAddress, Reliable.SocketWrapper]
-    socketFactory expects address returning wrapper once
+    socketFactory.expects(address).returning(wrapper).once()
 
     val conn = implicitly[ConnectionBuilder[Reliable]].buildConnection(address, Some(socketFactory), Some(CallingThreadDispatcher.Id))
-    val respFuture = implicitly[SendAndExpectFeedback[EventPart, Boolean, Reliable]].send(conn, Write(event))
+    val respFuture = implicitly[SendAndExpectFeedback[EventPart, Boolean, Reliable]].
+      send(conn, Write(event), timeout, ec)
+    system.shutdown
+    system.awaitTermination
 
     val out = oos.toByteArray
     val outRef = protoMsgEvent.toByteArray
@@ -88,10 +114,13 @@ class ReliableIOTest extends FunSuite
     (wrapper.inputStream _).expects().returning(new ByteArrayInputStream(responseBuilder.toByteArray)).once()
 
     val socketFactory = mockFunction[SocketAddress, Reliable.SocketWrapper]
-    socketFactory expects address returning wrapper once
+    socketFactory.expects(address).returning(wrapper).once()
 
     val conn = implicitly[ConnectionBuilder[Reliable]].buildConnection(address, Some(socketFactory), Some(CallingThreadDispatcher.Id))
-    val respFuture = implicitly[SendAndExpectFeedback[Query, Iterable[EventPart], Reliable]].send(conn, Write(Query("true")))
+    val respFuture = implicitly[SendAndExpectFeedback[Query, Iterable[EventPart], Reliable]].
+      send(conn, Write(Query("true")), timeout, ec)
+    system.shutdown
+    system.awaitTermination
 
     val out = oos.toByteArray
     val queryData = protoMsgQuery.toByteArray
@@ -114,14 +143,18 @@ class ReliableIOTest extends FunSuite
     (wrapper.outputStream _).expects().returning(os).twice()
 
     val socketFactory = mockFunction[SocketAddress, Reliable.SocketWrapper]
-    socketFactory expects address returning wrapper twice
+    socketFactory.expects(address).returning(wrapper).twice()
 
     val conn = implicitly[ConnectionBuilder[Reliable]].buildConnection(address, Some(socketFactory), Some(CallingThreadDispatcher.Id))
 
     // TODO need to test that automatic resending works (two messages should be sent instead of one)
-    implicitly[SendAndExpectFeedback[Query, Iterable[EventPart], Reliable]].send(conn, Write(Query("true")))
+    implicitly[SendAndExpectFeedback[Query, Iterable[EventPart], Reliable]].
+      send(conn, Write(Query("true")), timeout, ec)
 
-    implicitly[SendAndExpectFeedback[Query, Iterable[EventPart], Reliable]].send(conn, Write(Query("true")))
+    implicitly[SendAndExpectFeedback[Query, Iterable[EventPart], Reliable]].
+      send(conn, Write(Query("true")), timeout, ec)
+    system.shutdown
+    system.awaitTermination
 
     val queryData = protoMsgQuery.toByteArray
     val out = os.toByteArray
@@ -140,27 +173,32 @@ class ReliableIOTest extends FunSuite
     msg2 should be === queryData
   }
 
-//  test("reconnect in case of SocketException while connecting") {
-//    val wrapper = mock[Reliable.SocketWrapper]
-//    val socketFactory = mockFunction[SocketAddress, Reliable.SocketWrapper]
-//
-//    val os = new ByteArrayOutputStream
-//
-//    socketFactory expects address throwing new SocketException once()
-//    socketFactory expects address returning wrapper once()
-//    (wrapper.inputStream _).expects().returning(new ByteArrayInputStream(Array.ofDim[Byte](0))).once()
-//    (wrapper.outputStream _).expects().returning(os).once()
-//
-//    val conn = implicitly[ConnectionBuilder[Reliable]].buildConnection(address, Some(socketFactory), Some(CallingThreadDispatcher.Id))
-//
-//    // TODO need to test that automatic resending works (two messages should be sent instead of one)
-//    implicitly[SendAndExpectFeedback[Query, Iterable[EventPart], Reliable]].send(conn, Write(Query("true")))
-//
-//    implicitly[SendAndExpectFeedback[Query, Iterable[EventPart], Reliable]].send(conn, Write(Query("true")))
-//
-//    val out = os.toByteArray
-//    val queryData = protoMsgQuery.toByteArray
-//    new DataInputStream(new ByteArrayInputStream(out)).readInt should be === queryData.length
-//    out.slice(4, out.length) should be === queryData
-//  }
+  test("reconnect in case of SocketException while connecting") {
+    val wrapper = mock[Reliable.SocketWrapper]
+    val socketFactory = mockFunction[SocketAddress, Reliable.SocketWrapper]
+
+    val os = new ByteArrayOutputStream
+
+    socketFactory expects address throwing new SocketException once ()
+    socketFactory expects address returning wrapper once ()
+    (wrapper.inputStream _).expects().returning(new ByteArrayInputStream(Array.ofDim[Byte](0))).once()
+    (wrapper.outputStream _).expects().returning(os).once()
+
+    val conn = implicitly[ConnectionBuilder[Reliable]].buildConnection(address, Some(socketFactory), Some(CallingThreadDispatcher.Id))
+
+    // TODO need to test that automatic resending works (two messages should be sent instead of one)
+    implicitly[SendAndExpectFeedback[Query, Iterable[EventPart], Reliable]].
+      send(conn, Write(Query("true")), timeout, ec)
+
+    implicitly[SendAndExpectFeedback[Query, Iterable[EventPart], Reliable]].
+      send(conn, Write(Query("true")), timeout, ec)
+
+    system.shutdown
+    system.awaitTermination
+
+    val out = os.toByteArray
+    val queryData = protoMsgQuery.toByteArray
+    new DataInputStream(new ByteArrayInputStream(out)).readInt should be === queryData.length
+    out.slice(4, out.length) should be === queryData
+  }
 }

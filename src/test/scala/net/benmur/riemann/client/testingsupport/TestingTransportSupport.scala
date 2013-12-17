@@ -1,16 +1,24 @@
 package net.benmur.riemann.client.testingsupport
 
-import java.net.{ InetSocketAddress, SocketAddress }
+import java.net.InetSocketAddress
+import java.net.SocketAddress
+
+import scala.annotation.implicitNotFound
+import scala.concurrent.duration.DurationInt
+
 import com.aphyr.riemann.Proto
+
 import akka.actor.ActorSystem
 import akka.util.Timeout
-import net.benmur.riemann.client._
-import scala.concurrent.duration._
+import net.benmur.riemann.client.ConnectionBuilder
+import net.benmur.riemann.client.DestinationOps
+import net.benmur.riemann.client.EventPart
+import net.benmur.riemann.client.TransportType
 
 trait TestingTransportSupport {
-  import RiemannClient._
+  import net.benmur.riemann.client.RiemannClient._
 
-  implicit val timeout = Timeout(10 seconds)
+  implicit val timeout = Timeout(10.seconds)
   val address = new InetSocketAddress(0)
 
   class TestingTransportConnection(val where: SocketAddress = new InetSocketAddress(0))

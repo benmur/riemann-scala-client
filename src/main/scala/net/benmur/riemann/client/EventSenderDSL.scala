@@ -1,5 +1,7 @@
 package net.benmur.riemann.client
 
+import scala.annotation.implicitNotFound
+
 trait EventSenderDSL {
   class EventSenderOff[T <: TransportType](e: EventPart)(implicit messenger: SendOff[EventPart, T]) {
     def |>>(d: Destination[T]) = d send e
