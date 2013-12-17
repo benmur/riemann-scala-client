@@ -9,15 +9,15 @@ Scala client library for sending events to [Riemann](http://riemann.io/), featur
 ### Build System
 In build.sbt (scala 2.10.3, scala 2.9.3 is available on the v0.2-scala29 branch):
 ```
-libraryDependencies += "net.benmur" %% "riemann-scala-client" % "0.3.0"
+libraryDependencies += "net.benmur" %% "riemann-scala-client" % "0.3.1"
 ```
 
 Or in pom.xml if you are using maven:
 ```xml
 <dependency>
   <groupId>net.benmur</groupId>
-  <artifactId>riemann-scala-client_2.10.3</artifactId>
-  <version>0.3.0</version>
+  <artifactId>riemann-scala-client_2.10</artifactId>
+  <version>0.3.1</version>
 </dependency>
 ```
 
