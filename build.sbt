@@ -22,6 +22,8 @@ libraryDependencies += "org.scalamock" %% "scalamock-scalatest-support" % "3.0.1
 
 libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % "2.2.3" % "test"
 
+parallelExecution in Test := false
+
 publishMavenStyle := true
 
 publishArtifact in Test := false
