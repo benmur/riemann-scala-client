@@ -1,13 +1,17 @@
 package net.benmur.riemann.client
 
-import java.io.{ InputStream, OutputStream }
+import java.io.InputStream
+import java.io.OutputStream
 import java.net.SocketAddress
+
 import scala.annotation.implicitNotFound
 import scala.collection.mutable.WrappedArray
-import akka.actor.ActorSystem
-import akka.dispatch.Future
-import akka.util.Timeout
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+
 import akka.actor.ActorRef
+import akka.actor.ActorSystem
+import akka.util.Timeout
 
 sealed trait RiemannSendable
 
@@ -85,5 +89,5 @@ trait SendOff[S <: RiemannSendable, T <: TransportType] {
 
 @implicitNotFound(msg = "Connection type ${T} does not allow getting feedback from Riemann after sending ${S} because there is no implicit in scope returning a implementation of SendAndExpectFeedback[${S}, ${T}].")
 trait SendAndExpectFeedback[S <: RiemannSendable, R, T <: TransportType] {
-  def send(connection: T#Connection, command: Write[S])(implicit timeout: Timeout): Future[R]
+  def send(connection: T#Connection, command: Write[S], timeout: Timeout, context: ExecutionContext): Future[R]
 }

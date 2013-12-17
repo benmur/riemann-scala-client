@@ -1,10 +1,16 @@
 package net.benmur.riemann.client
 
-import java.net.{ DatagramPacket, DatagramSocket, SocketAddress }
+import java.net.DatagramPacket
+import java.net.DatagramSocket
+import java.net.SocketAddress
 
+import scala.annotation.implicitNotFound
 import scala.collection.mutable.WrappedArray
 
-import akka.actor.{ Actor, ActorSystem, Props }
+import akka.actor.Actor
+import akka.actor.ActorSystem
+import akka.actor.Props
+import akka.actor.actorRef2Scala
 import akka.util.Timeout
 
 trait UnreliableIO {
@@ -12,7 +18,7 @@ trait UnreliableIO {
   type Unreliable = ImplementedTransport
 
   class UnreliableConnection(where: SocketAddress, factory: ImplementedTransport#SocketFactory, dispatcherId: Option[String] = None)(implicit system: ActorSystem)
-      extends ImplementedTransport#Connection {
+    extends ImplementedTransport#Connection {
     val props = {
       val p = Props(new UnconnectedConnectionActor(where, factory))
       if (dispatcherId.isEmpty) p else p.withDispatcher(dispatcherId.get)
@@ -23,14 +29,15 @@ trait UnreliableIO {
   implicit object UnreliableSendOff extends SendOff[EventPart, ImplementedTransport] with Serializers {
     def sendOff(connection: ImplementedTransport#Connection, command: Write[EventPart]): Unit = {
       val data = serializeEventPartToProtoMsg(command.m).toByteArray
-      connection.ioActor tell WriteBinary(data)
+      connection.ioActor ! WriteBinary(data)
     }
   }
 
   private[this] class UnconnectedConnectionActor(where: SocketAddress, factory: ImplementedTransport#SocketFactory) extends Actor {
     val connection = factory(where)
     def receive = {
-      case WriteBinary(data) => connection send data
+      case WriteBinary(data) =>
+        connection send data
     }
   }
 

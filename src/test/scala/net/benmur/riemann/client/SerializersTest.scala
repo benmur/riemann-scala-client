@@ -1,9 +1,16 @@
 package net.benmur.riemann.client
 
 import scala.collection.JavaConversions.asJavaIterable
+
 import org.scalatest.FunSuite
-import com.aphyr.riemann.Proto
 import org.scalatest.matchers.ShouldMatchers
+
+import com.aphyr.riemann.Proto
+
+import testingsupport.SerializersFixture.event1
+import testingsupport.SerializersFixture.event2
+import testingsupport.SerializersFixture.protobufEvent1
+import testingsupport.SerializersFixture.protobufEvent2
 
 class SerializersTest extends FunSuite with ShouldMatchers {
   object Serializers extends Serializers

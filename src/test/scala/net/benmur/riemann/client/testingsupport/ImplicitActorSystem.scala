@@ -1,18 +1,23 @@
 package net.benmur.riemann.client.testingsupport
 
-import org.scalatest.BeforeAndAfterAll
-import akka.actor.ActorSystem
+import scala.concurrent.ExecutionContext
+
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.Suite
+
 import com.typesafe.config.ConfigFactory
 
-trait ImplicitActorSystem extends BeforeAndAfterAll {
+import akka.actor.ActorSystem
+
+trait ImplicitActorSystem extends BeforeAndAfterEach {
   self: Suite =>
+  implicit var system: ActorSystem = _
+  implicit var ec: ExecutionContext = _
 
-  implicit val system = ActorSystem("test", config = ConfigFactory.parseString(
-    """akka.event-handlers = [ "net.benmur.riemann.client.testingsupport.NopEventHandler" ]"""))
-
-  override def afterAll {
-    super.afterAll
-    system.shutdown
+  override def beforeEach = {
+    super.beforeEach
+    system = ActorSystem("test", config = ConfigFactory.parseString(
+      """akka.loggers = [ "net.benmur.riemann.client.testingsupport.NopEventHandler" ]"""))
+    ec = system.dispatcher
   }
 }
