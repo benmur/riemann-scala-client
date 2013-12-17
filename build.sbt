@@ -16,7 +16,7 @@ libraryDependencies += "com.aphyr" % "riemann-java-client" % "0.2.8"
 
 libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.2.3"
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "2.0" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "2.0.M5b" % "test"
 
 libraryDependencies += "org.scalamock" %% "scalamock-scalatest-support" % "3.0.1" % "test"
 
