@@ -43,7 +43,8 @@ trait UnreliableIO {
 
   val makeUdpConnection: ImplementedTransport#SocketFactory = (addr: SocketAddress) => {
     new ImplementedTransport#SocketWrapper {
-      val dest = new DatagramSocket(addr)
+      val dest = new DatagramSocket
+      dest.connect(addr)
       override def send(data: WrappedArray[Byte]) = dest send new DatagramPacket(data.array, data.length)
     }
   }
