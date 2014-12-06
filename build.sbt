@@ -2,7 +2,7 @@ name := "riemann-scala-client"
 
 organization := "net.benmur"
 
-version := "0.3.1"
+version := "0.4.0"
 
 scalaVersion := "2.10.3"
 
@@ -14,13 +14,13 @@ resolvers += "Akka" at "http://repo.akka.io/releases"
 
 libraryDependencies += "com.aphyr" % "riemann-java-client" % "0.2.0"
 
-libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.2.3"
+libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.3.2"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "2.0.M5b" % "test"
 
 libraryDependencies += "org.scalamock" %% "scalamock-scalatest-support" % "3.0.1" % "test"
 
-libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % "2.2.3" % "test"
+libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % "2.3.2" % "test"
 
 parallelExecution in Test := false
 
