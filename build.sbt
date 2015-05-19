@@ -14,15 +14,15 @@ resolvers += "Clojars" at "http://clojars.org/repo"
 
 resolvers += Resolver.typesafeRepo("releases")
 
-val akkaVersion = "2.3.9"
+val akkaVersion = "2.3.11"
 
 libraryDependencies += "com.aphyr" % "riemann-java-client" % "0.2.9"
 
 libraryDependencies += "com.typesafe.akka" %% "akka-actor" % akkaVersion
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.5" % "test"
 
-libraryDependencies += "org.scalamock" %% "scalamock-scalatest-support" % "3.2.1" % "test"
+libraryDependencies += "org.scalamock" %% "scalamock-scalatest-support" % "3.2.2" % "test"
 
 libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test"
 
