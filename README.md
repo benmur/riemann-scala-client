@@ -7,17 +7,19 @@ Scala client library for sending events to [Riemann](http://riemann.io/), featur
 ## Usage
 
 ### Build System
-In build.sbt (scala 2.10.3, scala 2.9.3 is available on the v0.2-scala29 branch):
+Scala 2.9 is available on the v0.2-scala29 branch and Scala 2.10 is available on the v0.3-scala210 branch.
+
+In build.sbt (scala 2.11.6):
 ```
-libraryDependencies += "net.benmur" %% "riemann-scala-client" % "0.3.2"
+libraryDependencies += "net.benmur" %% "riemann-scala-client" % "0.3.3-SNAPSHOT"
 ```
 
 Or in pom.xml if you are using maven:
 ```xml
 <dependency>
   <groupId>net.benmur</groupId>
-  <artifactId>riemann-scala-client_2.10</artifactId>
-  <version>0.3.2</version>
+  <artifactId>riemann-scala-client_2.11</artifactId>
+  <version>0.3.3-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -122,14 +124,14 @@ Please note that operations returning a Future won't compile if the connection i
 
 ## Dependencies
 
-- [Akka](http://akka.io/) 2.2.3
+- [Akka](http://akka.io/) 2.3.11
 - [riemann-java-client](https://github.com/aphyr/riemann-java-client) for the Protocol Buffers implementation only
 
 ## Status
 
 Pull requests are very welcome.
 
-This version is intended to work with Scala 2.10 and Akka 2.2.
+This version is intended to work with Scala 2.11 and Akka 2.3.
 
 Care has been taken to be as reliable as possible, because sending metrics should not impact your application's stability. In particular:
 - Unit test coverage is fairly good. No metrics are available yet, but the only code not tested is the actual socket code (which amounts to a total of 5 lines), for which the different conditions are mocked.
@@ -142,7 +144,9 @@ Please see next milestone's [open issues list](https://github.com/benmur/riemann
 
 ## Authors/Licensing
 
-- (c) 2012-2014 Rached Ben Mustapha <rached@benmur.net>
+- (c) 2012-2015 Rached Ben Mustapha <rached@benmur.net>
 - licensed under the MIT license, please see the LICENSE file for details.
 - thanks to Kyle Kingsbury for Riemann and riemann-java-client
 - thanks to Pavel Minchenkov who started the scala 2.10 port
+- thanks to Michael Allman for the scala 2.11 port and an UDP connection fix
+- thanks to Matt Sullivan who started the akka 2.3 move
