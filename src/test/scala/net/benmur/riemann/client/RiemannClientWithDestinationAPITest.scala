@@ -4,7 +4,7 @@ import scala.annotation.implicitNotFound
 
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 
 import testingsupport.TestingTransportSupport.TestingTransport
 import testingsupport.TestingTransportSupport.TestingTransportConnection
@@ -15,7 +15,7 @@ import testingsupport.TestingTransportSupport.event2
 import testingsupport.TestingTransportSupport.timeout
 
 class RiemannClientWithDestinationAPITest extends FunSuite
-  with ShouldMatchers
+  with Matchers
   with testingsupport.ImplicitActorSystem
   with MockFactory {
 

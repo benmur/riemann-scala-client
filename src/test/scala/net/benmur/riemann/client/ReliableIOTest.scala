@@ -15,7 +15,7 @@ import scala.concurrent.duration.DurationInt
 
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 
 import com.aphyr.riemann.Proto
 
@@ -37,7 +37,7 @@ import testingsupport.TestingTransportSupport.timeout
 class ReliableIOTest extends FunSuite
   with testingsupport.ImplicitActorSystem
   with MockFactory
-  with ShouldMatchers {
+  with Matchers {
 
   import ReliableIO._
   import testingsupport.TestingTransportSupport._
@@ -61,8 +61,8 @@ class ReliableIOTest extends FunSuite
 
     val out = oos.toByteArray
     val outRef = protoMsgEvent.toByteArray
-    new DataInputStream(new ByteArrayInputStream(out)).readInt should be === outRef.length
-    out.slice(4, out.length) should be === outRef
+    new DataInputStream(new ByteArrayInputStream(out)).readInt should === (outRef.length)
+    out.slice(4, out.length) should === (outRef)
   }
 
   test("sending a protobuf Msg with Event, with feedback") {
@@ -91,11 +91,11 @@ class ReliableIOTest extends FunSuite
 
     val out = oos.toByteArray
     val outRef = protoMsgEvent.toByteArray
-    new DataInputStream(new ByteArrayInputStream(out)).readInt should be === outRef.length
-    out.slice(4, out.length) should be === outRef
+    new DataInputStream(new ByteArrayInputStream(out)).readInt should === (outRef.length)
+    out.slice(4, out.length) should === (outRef)
 
     val resp = Await.result(respFuture, 1.second)
-    resp should be === true
+    resp should === (true)
   }
 
   test("sending a protobuf Msg with Query, with feedback") {
@@ -124,11 +124,11 @@ class ReliableIOTest extends FunSuite
 
     val out = oos.toByteArray
     val queryData = protoMsgQuery.toByteArray
-    new DataInputStream(new ByteArrayInputStream(out)).readInt should be === queryData.length
-    out.slice(4, out.length) should be === queryData
+    new DataInputStream(new ByteArrayInputStream(out)).readInt should === (queryData.length)
+    out.slice(4, out.length) should === (queryData)
 
     val resp = Await.result(respFuture, 1.second)
-    resp should be === Seq(event, event2)
+    resp should === (Seq(event, event2))
   }
 
   test("reconnect in case of SocketException while reading") {
@@ -161,16 +161,16 @@ class ReliableIOTest extends FunSuite
     val is = new ByteArrayInputStream(out)
     val dis = new DataInputStream(is)
 
-    dis.readInt should be === queryData.length
+    dis.readInt should === (queryData.length)
     val msg1 = Array.ofDim[Byte](queryData.length)
     dis.readFully(msg1)
-    msg1 should be === queryData
+    msg1 should === (queryData)
 
     // 2 messages were written because it crashed during the 1st response read, after writing
-    dis.readInt should be === queryData.length
+    dis.readInt should === (queryData.length)
     val msg2 = Array.ofDim[Byte](queryData.length)
     dis.readFully(msg2)
-    msg2 should be === queryData
+    msg2 should === (queryData)
   }
 
   test("reconnect in case of SocketException while connecting") {
@@ -198,7 +198,7 @@ class ReliableIOTest extends FunSuite
 
     val out = os.toByteArray
     val queryData = protoMsgQuery.toByteArray
-    new DataInputStream(new ByteArrayInputStream(out)).readInt should be === queryData.length
-    out.slice(4, out.length) should be === queryData
+    new DataInputStream(new ByteArrayInputStream(out)).readInt should === (queryData.length)
+    out.slice(4, out.length) should === (queryData)
   }
 }

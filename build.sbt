@@ -2,25 +2,29 @@ name := "riemann-scala-client"
 
 organization := "net.benmur"
 
-version := "0.3.2"
+version := "0.3.3-SNAPSHOT"
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.11.6"
+
+crossScalaVersions := Seq("2.10.5", "2.11.6")
 
 scalacOptions ++= List("-deprecation", "-feature", "-unchecked")
 
 resolvers += "Clojars" at "http://clojars.org/repo"
 
-resolvers += "Akka" at "http://repo.akka.io/releases"
+resolvers += Resolver.typesafeRepo("releases")
 
-libraryDependencies += "com.aphyr" % "riemann-java-client" % "0.2.0"
+val akkaVersion = "2.3.11"
 
-libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.2.3"
+libraryDependencies += "com.aphyr" % "riemann-java-client" % "0.2.9"
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "2.0.M5b" % "test"
+libraryDependencies += "com.typesafe.akka" %% "akka-actor" % akkaVersion
 
-libraryDependencies += "org.scalamock" %% "scalamock-scalatest-support" % "3.0.1" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.5" % "test"
 
-libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % "2.2.3" % "test"
+libraryDependencies += "org.scalamock" %% "scalamock-scalatest-support" % "3.2.2" % "test"
+
+libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test"
 
 parallelExecution in Test := false
 
