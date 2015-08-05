@@ -11,7 +11,7 @@ Scala client library for sending events to [Riemann](http://riemann.io/), featur
 ## Usage
 
 ### Build System
-In build.sbt (scala 2.11.6):
+In build.sbt (scala 2.11.7):
 ```
 libraryDependencies += "net.benmur" %% "riemann-scala-client" % "0.3.3-SNAPSHOT"
 ```
