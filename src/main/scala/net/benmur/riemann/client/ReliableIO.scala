@@ -4,6 +4,7 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.net.Socket
 import java.net.SocketAddress
+import java.net.ConnectException
 import java.net.SocketException
 
 import scala.annotation.implicitNotFound
@@ -19,7 +20,7 @@ import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import akka.actor.OneForOneStrategy
 import akka.actor.Props
-import akka.actor.SupervisorStrategy.Restart
+import akka.actor.SupervisorStrategy.{ Directive, Restart, defaultDecider }
 import akka.actor.actorRef2Scala
 import akka.pattern.ask
 import akka.util.Timeout
@@ -29,9 +30,11 @@ trait ReliableIO {
   type Reliable = ImplementedTransport
 
   private[this] class ReliableConnectionActor(where: SocketAddress, factory: ImplementedTransport#SocketFactory, dispatcherId: Option[String])(implicit system: ActorSystem) extends Actor {
-    override val supervisorStrategy = OneForOneStrategy(maxNrOfRetries = 2, withinTimeRange = 1.second) { // Maybe this needs to be configurable
-      case _ => Restart
-    }
+    override val supervisorStrategy = OneForOneStrategy()({{
+      case _: ConnectException =>
+        Thread.sleep(5000) // Pause before restarting children after a ConnectException
+        Restart
+      }: PartialFunction[Throwable, Directive]} orElse defaultDecider)
 
     val props = {
       val p = Props(new TcpConnectionActor(where, factory))
@@ -86,7 +89,11 @@ trait ReliableIO {
           outputStream.flush
           val buf = Array.ofDim[Byte](inputStream.readInt())
           inputStream.readFully(buf)
-          sender ! Proto.Msg.parseFrom(buf)
+
+          // Don't send replies from Riemann to deadLetters. It's just distracting
+          if (sender != context.system.deadLetters) {
+            sender ! Proto.Msg.parseFrom(buf)
+          }
         } catch {
           case e: SocketException =>
             throw e
