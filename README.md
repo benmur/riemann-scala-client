@@ -33,24 +33,31 @@ Or in pom.xml if you are using maven:
 ```
 
 ### Minimum viable use case
-```scala
-import net.benmur.riemann.client._
-import RiemannClient._
+The imports list is somewhat longer than it used to be, because Scala 2.11 became more picky about choosing implicits (having both `Reliable` and `Unreliable` variants of `SendOff` in scope makes it unable to choose either one).
 
-val metrics = riemannConnectAs[Unreliable] to new InetSocketAddress("localhost", 5555)
-service("service name") | state("warning") |>> metrics
+Issue #10 is open about simplifying imports again.
+
+```scala
+import net.benmur.riemann.client.RiemannClient.{riemannConnectAs, Unreliable}
+import net.benmur.riemann.client.UnreliableIO._
+import net.benmur.riemann.client.EventSenderDSL._
+import net.benmur.riemann.client.EventDSL._
+
+import akka.actor.ActorSystem
+import akka.util.Timeout
+import scala.concurrent.duration.DurationInt
+import java.net.InetSocketAddress
+
+object RiemannSendTest extends App {
+    implicit val system = ActorSystem()
+    implicit val timeout = Timeout(5.seconds)
+
+    val metrics = riemannConnectAs[Unreliable] to new InetSocketAddress("localhost", 5555)
+    service("service name") | state("warning") |>> metrics
+}
 ```
 
-### Imports
-
-The client relies heavily on implicits, here are the needed ones in scope:
-```scala
-import net.benmur.riemann.client._
-import RiemannClient._
-
-implicit val system = ActorSystem()
-implicit val timeout = Timeout(5 seconds)
-```
+Change `Unreliable` to `Reliable` and `UnreliableIO` to `ReliableIO` as needed, which will make the `|><` sending operation (returning a Future) available.
 
 ### Connecting
 
@@ -157,5 +164,5 @@ Please see next milestone's [open issues list](https://github.com/benmur/riemann
 - licensed under the MIT license, please see the LICENSE file for details.
 - thanks to Kyle Kingsbury for Riemann and riemann-java-client
 - thanks to Pavel Minchenkov who started the scala 2.10 port
-- thanks to Michael Allman for the scala 2.11 port and an UDP connection fix
+- thanks to Michael Allman for the scala 2.11 port, TCP reconnection improvements and an UDP connection fix
 - thanks to Matt Sullivan who started the akka 2.3 move
