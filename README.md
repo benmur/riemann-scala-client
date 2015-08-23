@@ -4,16 +4,16 @@ Scala client library for sending events to [Riemann](http://riemann.io/), featur
 
 [![Build Status](https://api.travis-ci.org/benmur/riemann-scala-client.png)](https://travis-ci.org/benmur/riemann-scala-client/)
 
-* Current Stable version: 0.3.2, for scala 2.10 on the v0.3-scala210 branch.
+* Current Stable version: 0.3.3 for scala 2.11 and scala 2.10, on master. 
+* Current Stable version: 0.3.2 for scala 2.10 on the v0.3-scala210 branch.
 * Previous Stable version: 0.2.1 for scala 2.9 on the v0.2-scala29 branch.
-* Current development version: 0.3.3-SNAPSHOT for scala 2.11 and scala 2.10, on master. 
 
 ## Usage
 
 ### Build System
 In build.sbt (scala 2.11.6):
 ```
-libraryDependencies += "net.benmur" %% "riemann-scala-client" % "0.3.3-SNAPSHOT"
+libraryDependencies += "net.benmur" %% "riemann-scala-client" % "0.3.3"
 ```
 
 Or in pom.xml if you are using maven:
@@ -21,14 +21,14 @@ Or in pom.xml if you are using maven:
 <dependency>
   <groupId>net.benmur</groupId>
   <artifactId>riemann-scala-client_2.11</artifactId>
-  <version>0.3.3-SNAPSHOT</version>
+  <version>0.3.3</version>
 </dependency>
 ```
 ```xml
 <dependency>
   <groupId>net.benmur</groupId>
   <artifactId>riemann-scala-client_2.10</artifactId>
-  <version>0.3.3-SNAPSHOT</version>
+  <version>0.3.3</version>
 </dependency>
 ```
 
