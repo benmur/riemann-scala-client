@@ -88,25 +88,25 @@ class SerializersTest extends FunSuite with Matchers {
     }
   }
 
-  test("out: convert an EventPart with only metric (long) to a protobuf Msg") {
+  test("out: convert an EventPart setting only metric (long) to a protobuf Msg") {
     val expected = Proto.Msg.newBuilder.addEvents(
-      Proto.Event.newBuilder.setMetricSint64(1234L)).build
+      Proto.Event.newBuilder.setMetricSint64(1234L).setMetricF(1234f)).build
 
     assertResult(expected) {
       serializeEventPartToProtoMsg(EventPart(metric = Some(1234L)))
     }
   }
 
-  test("out: convert an EventPart with only metric (double) to a protobuf Msg") {
+  test("out: convert an EventPart setting only metric (double) to a protobuf Msg") {
     val expected = Proto.Msg.newBuilder.addEvents(
-      Proto.Event.newBuilder.setMetricD(1234.9)).build
+      Proto.Event.newBuilder.setMetricD(1234.9).setMetricF(1234.9f)).build
 
     assertResult(expected) {
       serializeEventPartToProtoMsg(EventPart(metric = Some(1234.9)))
     }
   }
 
-  test("out: convert an EventPart with only metric (float) to a protobuf Msg") {
+  test("out: convert an EventPart setting only metric (float) to a protobuf Msg") {
     val expected = Proto.Msg.newBuilder.addEvents(
       Proto.Event.newBuilder.setMetricF(1234.9f)).build
 
@@ -220,24 +220,33 @@ class SerializersTest extends FunSuite with Matchers {
     }
   }
 
-  test("in: convert a protobuf Msg with Event with only metric (long) to a List(EventPart)") {
-    assertResult(List(EventPart(metric = Some(1234L)))) {
-      unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
-        Proto.Event.newBuilder.setMetricSint64(1234L)).build)
+  test("in: convert a protobuf Msg with Event with metrics (long) and (float) to a List(EventPart)") {
+    val expected = List(EventPart(metric = Some(1234L)))
+    val actual = unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
+        Proto.Event.newBuilder.setMetricSint64(1234L).setMetricF(1234)).build)
+    assertResult(expected)(actual)
+    assertResult(expected.map(_.metric.map(_.getClass))) {
+      actual.map(_.metric.map(_.getClass))
     }
   }
 
   test("in: convert a protobuf Msg with Event with only metric (float) to a List(EventPart)") {
-    assertResult(List(EventPart(metric = Some(1234.0f)))) {
-      unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
+    val expected = List(EventPart(metric = Some(1234.0f)))
+    val actual = unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
         Proto.Event.newBuilder.setMetricF(1234.0f)).build)
+    assertResult(expected)(actual)
+    assertResult(expected.map(_.metric.map(_.getClass))) {
+      actual.map(_.metric.map(_.getClass))
     }
   }
 
-  test("in: convert a protobuf Msg with Event with only metric (double) to a List(EventPart)") {
-    assertResult(List(EventPart(metric = Some(1234.1: Double)))) {
-      unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
-        Proto.Event.newBuilder.setMetricD(1234.1: Double)).build)
+  test("in: convert a protobuf Msg with Event with metrics (double) and (float) to a List(EventPart)") {
+    val expected = List(EventPart(metric = Some(1234.1)))
+    val actual = unserializeProtoMsg(Proto.Msg.newBuilder.setOk(true).addEvents(
+        Proto.Event.newBuilder.setMetricD(1234.1).setMetricF(1234.1f)).build)
+    assertResult(expected)(actual)
+    assertResult(expected.map(_.metric.map(_.getClass))) {
+      actual.map(_.metric.map(_.getClass))
     }
   }
 

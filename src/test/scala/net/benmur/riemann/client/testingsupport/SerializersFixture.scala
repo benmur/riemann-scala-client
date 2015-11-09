@@ -23,6 +23,7 @@ object SerializersFixture {
     .addAllTags(Seq("tag1", "tag2"))
     .setTtl(10)
     .setMetricSint64(112)
+    .setMetricF(112)
     .setDescription("descript")
 
   val protobufEvent2 = Proto.Event.newBuilder
@@ -33,5 +34,6 @@ object SerializersFixture {
     .addAllTags(Seq("tag3"))
     .setTtl(100)
     .setMetricSint64(1120)
+    .setMetricF(1120)
     .setDescription("descript2")
 }
