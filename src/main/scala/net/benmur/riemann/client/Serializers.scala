@@ -31,8 +31,8 @@ trait Serializers {
     e.description foreach (b.setDescription(_))
     e.tags foreach (b.addTags(_))
     e.metric foreach (_ match {
-      case value: Long => b.setMetricSint64(value)
-      case value: Double => b.setMetricD(value)
+      case value: Long => b.setMetricSint64(value); b.setMetricF(value)
+      case value: Double => b.setMetricD(value); b.setMetricF(value.toFloat)
       case value: Float => b.setMetricF(value)
       case v => System.err.println("Warning: don't know what to do with value " + v)
     })
@@ -53,9 +53,9 @@ trait Serializers {
   private def extractMetric(e: Proto.Event) =
     if (e.hasMetricD)
       Some(e.getMetricD)
-    else if (e.hasMetricF)
-      Some(e.getMetricF)
     else if (e.hasMetricSint64)
       Some(e.getMetricSint64)
+    else if (e.hasMetricF)
+      Some(e.getMetricF)
     else None
 }
