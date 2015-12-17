@@ -22,6 +22,7 @@ case class EventPart(
   time: Option[Long] = None,
   description: Option[String] = None,
   tags: Iterable[String] = Nil,
+  attributes: Map[String, String] = Map.empty,
   metric: Option[AnyVal] = None,
   ttl: Option[Float] = None) extends RiemannSendable
 
