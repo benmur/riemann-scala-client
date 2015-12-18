@@ -1,5 +1,7 @@
 package net.benmur.riemann.client
 
+import com.aphyr.riemann.Proto.Attribute
+
 import scala.collection.JavaConversions.asJavaIterable
 import scala.collection.JavaConversions.iterableAsScalaIterable
 
@@ -26,6 +28,7 @@ trait Serializers {
     val b = Proto.Event.newBuilder
     e.host foreach (b.setHost(_))
     e.service foreach (b.setService(_))
+    b.addAllAttributes(convertAttributes(e.attributes))
     e.state foreach (b.setState(_))
     e.time foreach (b.setTime(_))
     e.description foreach (b.setDescription(_))
@@ -38,6 +41,11 @@ trait Serializers {
     })
     e.ttl foreach (b.setTtl(_))
     b.build
+  }
+
+  private def convertAttributes(attr: Map[String, String]) =
+    attr.foldLeft(List.empty[Attribute]) { (acc, elem) =>
+    Attribute.newBuilder().setKey(elem._1).setValue(elem._2).build() :: acc
   }
 
   private def convertProtoEventToEventPart(e: Proto.Event) = EventPart(

@@ -56,6 +56,12 @@ class EventDSLTest extends FunSuite {
     }
   }
 
+  test("provide an EventPart builder function for attributes") {
+    assertResult(EventPart(attributes = Map("key" -> "value"))) {
+      EventDSL.attributes("key" -> "value")
+    }
+  }
+
   test("provide an EventPart builder function for metric (float)") {
     assertResult(EventPart(metric = Some(1.12f))) {
       metric(1.12f)
