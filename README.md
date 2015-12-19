@@ -164,5 +164,6 @@ Please see next milestone's [open issues list](https://github.com/benmur/riemann
 - licensed under the MIT license, please see the LICENSE file for details.
 - thanks to Kyle Kingsbury for Riemann and riemann-java-client
 - thanks to Pavel Minchenkov who started the scala 2.10 port
-- thanks to Michael Allman for the scala 2.11 port, TCP reconnection improvements and an UDP connection fix
+- thanks to Michael Allman for the scala 2.11 port, TCP reconnection improvements, float values roundtripping fixes and an UDP connection fix
 - thanks to Matt Sullivan who started the akka 2.3 move
+- thanks to github.com/janlisse for event attributes support
