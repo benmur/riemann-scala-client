@@ -13,6 +13,9 @@ Scala client library for sending events to [Riemann](http://riemann.io/), featur
 ### Build System
 In build.sbt (scala 2.11.7):
 ```
+# riemann-java-client comes from clojars.org
+resolvers += "clojars.org" at "http://clojars.org/repo"
+
 libraryDependencies += "net.benmur" %% "riemann-scala-client" % "0.3.4"
 ```
 
