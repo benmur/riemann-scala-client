@@ -17,7 +17,7 @@ In build.sbt (scala 2.11.7):
 # riemann-java-client comes from clojars.org
 resolvers += "clojars.org" at "http://clojars.org/repo"
 
-libraryDependencies += "net.benmur" %% "riemann-scala-client" % "0.3.4"
+libraryDependencies += "net.benmur" %% "riemann-scala-client" % "0.4.0"
 ```
 
 Or in pom.xml if you are using maven:
@@ -25,14 +25,14 @@ Or in pom.xml if you are using maven:
 <dependency>
   <groupId>net.benmur</groupId>
   <artifactId>riemann-scala-client_2.11</artifactId>
-  <version>0.3.4</version>
+  <version>0.4.0</version>
 </dependency>
 ```
 ```xml
 <dependency>
   <groupId>net.benmur</groupId>
   <artifactId>riemann-scala-client_2.10</artifactId>
-  <version>0.3.4</version>
+  <version>0.4.0</version>
 </dependency>
 ```
 
