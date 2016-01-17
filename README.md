@@ -4,7 +4,8 @@ Scala client library for sending events to [Riemann](http://riemann.io/), featur
 
 [![Build Status](https://api.travis-ci.org/benmur/riemann-scala-client.png)](https://travis-ci.org/benmur/riemann-scala-client/)
 
-* Current Stable version: 0.3.4 for scala 2.11 and scala 2.10, on master.
+* Current Stable version: 0.4.0 for scala 2.11 and scala 2.10, on master.
+* Old Stable version: 0.3.4 for scala 2.11 and scala 2.10, on master.
 * Current Stable version: 0.3.2 for scala 2.10 on the v0.3-scala210 branch.
 * Previous Stable version: 0.2.1 for scala 2.9 on the v0.2-scala29 branch.
 
