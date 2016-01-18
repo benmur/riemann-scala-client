@@ -74,7 +74,7 @@ Please note that operations returning a Future won't compile if the connection i
 
 ### Building events
 
-Building an event is done by combining event parts. Each part is optional, as per the [Protocol Buffers definition](https://github.com/aphyr/riemann-java-client/blob/master/src/main/proto/riemann/proto.proto). Here is how to build a completely populated event:
+Building an event is done by combining event parts. Each part is optional, as per the [Protocol Buffers definition](https://github.com/aphyr/riemann-java-client/blob/master/riemann-java-client/src/main/proto/riemann/proto.proto). Here is how to build a completely populated event:
 ```scala
 val event = oneEvent() | host("hostname") | service("service xyz") | state("warning") | time(1234L) | 
             description("metric is way too high") | tags("performance", "slow", "provider-xyz") | 
